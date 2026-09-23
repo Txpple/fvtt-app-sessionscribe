@@ -2,7 +2,32 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { expandPath, loadConfig } from '../config.js';
 import type { Exec, HealthDeps } from '../health.js';
+import { CAMPAIGN_JSON, makeTempRepo, removeTempRepo } from '../testing/campaign-fixture.js';
 import { StatusTool } from './status.js';
+
+describe('scribe-status record', () => {
+  it('summarises the record, details one session, and reports a broken repo without failing', async () => {
+    const root = makeTempRepo({
+      'campaign.json': CAMPAIGN_JSON,
+      'sessions/2026-01-06/recap.md': '#',
+    });
+    try {
+      const env = { SCRIBE_CAMPAIGN_REPO: root };
+      const tool = new StatusTool(deps({ env }));
+      const all = await tool.handleStatus({});
+      expect(all.record?.campaign).toBe('The Lost Mine of Phandelver');
+      expect(all.record?.sessions.map(s => s.dir)).toEqual(['2026-01-06']);
+      const one = await tool.handleStatus({ date: '2026-01-06' });
+      expect(one.session?.outputs.recap?.present).toEqual(['recap.md']);
+      const miss = await tool.handleStatus({ date: '2026-02-02' });
+      expect(miss.recordError).toMatch(/no session directory/);
+    } finally {
+      removeTempRepo(root);
+    }
+    const broken = await new StatusTool(deps()).handleStatus({});
+    expect(broken.recordError).toMatch(/campaign\.json: not found/);
+  });
+});
 
 const ENV = {
   FOUNDRY_SCRIBE_USER: 'Scribe Assistant',

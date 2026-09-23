@@ -11,9 +11,10 @@ writes the session record into the campaign repo: recaps, combat logs, GM notes,
 snapshots. It **reads the world and never writes it**. The session-diary page and the bestiary
 are authored through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-23): the port is in progress.** Milestone 1, the scaffold and `scribe-status`,
-has landed. The functionality is being broken out of `fvtt-mcp-dnd5e` (owner ruling 2026-09-23,
-reversing that repo's 3.0 decisions #16 and #17). Until a piece lands here, its source below is
+**State (2026-09-23): the port is in progress.** Milestones 1–2 have landed: the scaffold,
+`scribe-status`, and campaign.json + the record view. The functionality is being broken out of
+`fvtt-mcp-dnd5e` (owner ruling 2026-09-23, reversing that repo's 3.0 decisions #16 and #17).
+Until a piece lands here, its source below is
 the working implementation. When a piece lands, move it from "Target surface" into the
 architecture notes and drop its row from "Port sources".
 
@@ -44,12 +45,21 @@ against the sandbox will be `scripts/verify-*.mjs` / `scripts/parity-*.mjs`, run
   repo's client.
 - Machine access (`execFile`, `fs.existsSync`) is injected through `HealthDeps`
   (`src/health.ts`), so tests never touch the real machine.
+- `src/campaign.ts` is the machine side of the campaign-repo convention:
+  - It parses `campaign.json` with zod and fills the defaults.
+  - `resolveSessionDir` turns a `date` (or a slugged directory name like
+    `2026-07-06-pipeline-test`) into a session directory; every tool that takes `date` resolves
+    it this way.
+- `src/record.ts` measures each session directory against today's `sessions.outputs`. Older
+  sessions were made under older output sets, so "missing" there is history, not breakage.
+- Test fixtures are synthetic (`src/testing/campaign-fixture.ts`: the convention's own invented
+  party), written to temp dirs.
 
 ## Target surface (the approved plan; verb-noun names like the family)
 
 | Tool | Replaces | Status |
 | --- | --- | --- |
-| `scribe-status` | `session_scribe.py smoke`; plus health, jobs and the record's completeness | health ✅; record, jobs pending |
+| `scribe-status` | `session_scribe.py smoke`; plus health, jobs and the record's completeness | health ✅ record ✅; jobs pending |
 | `fetch-recording` | `… fetch` (Craig link or the DM's zip) | pending |
 | `transcribe-recording` | `… transcribe` (a detached job, not a blocking call) | pending |
 | `export-session-chat` | the scribe's use of MCP `export-chat-log` (that tool stays in the MCP for general use) | pending |
