@@ -26,6 +26,7 @@ describe('tool registry', () => {
       'build-transcript',
       'export-session-chat',
       'fetch-recording',
+      'render-pdf',
       'scribe-status',
       'snapshot-party',
       'transcribe-recording',
@@ -64,6 +65,7 @@ describe('tool registry', () => {
         'build-transcript',
         'analyze-combat',
         'snapshot-party',
+        'render-pdf',
       ]);
       const result = await client.callTool({ name: 'scribe-status', arguments: {} });
       expect(result.isError).toBeFalsy();

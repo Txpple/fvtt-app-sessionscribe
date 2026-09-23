@@ -66,7 +66,7 @@ against the sandbox will be `scripts/verify-*.mjs` / `scripts/parity-*.mjs`, run
 | `build-transcript` | `… align`, fixing whispers (never tagged; 77 across 9 sessions) + a new `transcript-public.md` | ✅ parity PASS on all 9 real sessions (`scripts/parity-transcript.mjs`, offline) |
 | `analyze-combat` | MCP `get-combat-stats` (fold ported verbatim: `src/analytics/combat.ts`) | ✅ offline; sandbox parity pending (`scripts/parity-combat.mjs`) |
 | `snapshot-party` | hand-run `manage-actors export` per PC | ✅ offline; sandbox byte-parity pending (`scripts/parity-snapshot.mjs`) |
-| `render-pdf` | hand-run Edge + `pdf-preview.mjs` | pending |
+| `render-pdf` | hand-run Edge + `pdf-preview.mjs` | ✅ re-rendered 2026-09-22: all 4 PDFs match the committed page counts and sizes |
 
 Foundry reads will run in a **one-shot child process**, never in the server:
 - It connects as **Scribe Assistant**, with the admin key stripped.

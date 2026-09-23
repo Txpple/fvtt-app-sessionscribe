@@ -7,6 +7,7 @@ import { AnalyzeCombatTool } from './tools/analyze-combat.js';
 import { BuildTranscriptTool } from './tools/build-transcript.js';
 import { ExportSessionChatTool } from './tools/export-session-chat.js';
 import { FetchRecordingTool } from './tools/fetch-recording.js';
+import { RenderPdfTool } from './tools/render-pdf.js';
 import { SnapshotPartyTool } from './tools/snapshot-party.js';
 import { type StatusDeps, StatusTool } from './tools/status.js';
 import { TranscribeRecordingTool } from './tools/transcribe-recording.js';
@@ -23,6 +24,7 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
   const status = new StatusTool(deps);
   const combat = new AnalyzeCombatTool(deps);
   const snapshot = new SnapshotPartyTool(deps);
+  const pdf = new RenderPdfTool(deps);
   const fetchRec = new FetchRecordingTool(deps);
   const transcribe = new TranscribeRecordingTool(deps);
   const chat = new ExportSessionChatTool(deps);
@@ -36,6 +38,7 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
     'build-transcript': args => transcript.handleBuildTranscript(args),
     'analyze-combat': args => combat.handleAnalyzeCombat(args),
     'snapshot-party': args => snapshot.handleSnapshotParty(args),
+    'render-pdf': args => pdf.handleRenderPdf(args),
   };
 
   const definitions = [
@@ -46,6 +49,7 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
     ...transcript.getToolDefinitions(),
     ...combat.getToolDefinitions(),
     ...snapshot.getToolDefinitions(),
+    ...pdf.getToolDefinitions(),
   ];
 
   const tools = Object.keys(handlers).map(name => {
