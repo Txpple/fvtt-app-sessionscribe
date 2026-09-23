@@ -4,16 +4,64 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # fvtt-app-sessionscribe
 
-A standalone session-scribe tool for Foundry VTT (dnd5e) tables. It fetches what happened at a
-session (the Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the party's
-sheets) and creates and manages the session record: adventure recaps, combat logs, GM notes,
-party snapshots.
+The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an MCP server,
+driven by Claude Code, plus the `session-scribe` skill. It reads what happened at a session (the
+Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the party's sheets) and
+writes the session record into the campaign repo: recaps, combat logs, GM notes, party
+snapshots. It **reads the world and never writes it**. The session-diary page and the bestiary
+are authored through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-23): greenfield.** The directory is empty and not yet a git repo. No stack,
-build, lint or test tooling has been chosen, so nothing below describes code that exists here.
-The functionality is being ported in from sister repos under `D:\Workbench\FVTT\Repos\`. Until a
-piece lands here, its source is the working implementation. When a piece lands, add its commands
-and architecture to this file and remove its row from the table below.
+**State (2026-09-23): the port is in progress.** Milestone 1, the scaffold and `scribe-status`,
+has landed. The functionality is being broken out of `fvtt-mcp-dnd5e` (owner ruling 2026-09-23,
+reversing that repo's 3.0 decisions #16 and #17). Until a piece lands here, its source below is
+the working implementation. When a piece lands, move it from "Target surface" into the
+architecture notes and drop its row from "Port sources".
+
+## Commands
+
+```bash
+npm install                 # once; fvtt-mcp-dnd5e must be built first (its dist/ is the client)
+npm run build               # tsc → dist/
+npm test                    # vitest, offline (src/**/*.test.ts)
+npx vitest run src/tools/status.test.ts   # one file; add -t "<name>" for one test
+npm run check && npm run typecheck && npm test && npm run build && npm run knip   # the gate
+```
+
+The gate runs before every commit. `npm run check:fix` applies biome's formatting. Live checks
+against the sandbox will be `scripts/verify-*.mjs` / `scripts/parity-*.mjs`, run by hand.
+
+## Architecture
+
+- `src/index.ts` is the stdio entry point. `src/server.ts` builds the MCP server over a registry
+  and is transport-agnostic; the tests drive it with an in-memory client.
+- `src/registry.ts` is the single name → handler map. The advertised tool list is derived from it
+  and fails fast when a handler and a definition don't match.
+- Each tool is a class in `src/tools/` with a hoisted zod schema. `src/utils/schema.ts`
+  (`toInputSchema`) generates the advertised JSON Schema, which is never hand-written. Keep the
+  family's prose budget: a description ≤ 400 chars, a leaf `.describe()` ≤ 120.
+- `src/config.ts` loads this repo's `.env` once. Nothing else reads `process.env`. Foundry host
+  URLs and the admin key are not in it: they come from `fvtt-mcp-dnd5e`'s `.env` through that
+  repo's client.
+- Machine access (`execFile`, `fs.existsSync`) is injected through `HealthDeps`
+  (`src/health.ts`), so tests never touch the real machine.
+
+## Target surface (the approved plan; verb-noun names like the family)
+
+| Tool | Replaces | Status |
+| --- | --- | --- |
+| `scribe-status` | `session_scribe.py smoke`; plus health, jobs and the record's completeness | health ✅; record, jobs pending |
+| `fetch-recording` | `… fetch` (Craig link or the DM's zip) | pending |
+| `transcribe-recording` | `… transcribe` (a detached job, not a blocking call) | pending |
+| `export-session-chat` | the scribe's use of MCP `export-chat-log` (that tool stays in the MCP for general use) | pending |
+| `build-transcript` | `… align`, fixing whispers (never tagged; 77 across 9 sessions) + a new `transcript-public.md` | pending |
+| `analyze-combat` | MCP `get-combat-stats` | pending |
+| `snapshot-party` | hand-run `manage-actors export` per PC | pending |
+| `render-pdf` | hand-run Edge + `pdf-preview.mjs` | pending |
+
+Foundry reads will run in a **one-shot child process**, never in the server:
+- It connects as **Scribe Assistant**, with the admin key stripped.
+- It injects this repo's own page bundle (`window.__scribe`), reads, prints JSON, and disposes.
+- A hung dispose can then never leave a headless GM joined to the world.
 
 ## Port sources: where the functionality lives today
 
@@ -24,7 +72,7 @@ and architecture to this file and remove its row from the table below.
 | Machine bootstrap | `…/session-scribe/scripts/setup.ps1` | Installs ffmpeg and uv via winget, builds the venv at `~\.session-scribe\venv`, runs a GPU smoke test. Windows-only. |
 | PDF page check | `…/session-scribe/scripts/pdf-preview.mjs` | Renders a pdf.js page grid so every page can be inspected |
 | Output templates | `…/session-scribe/templates/{recap,recap-print,gm-notes,combat-log}.html` | |
-| Chat log export | MCP tool `export-chat-log`: `../fvtt-mcp-dnd5e/src/tools/chat.ts`, `src/utils/transcript.ts` | |
+| Chat log export | MCP tool `export-chat-log`: `../fvtt-mcp-dnd5e/src/tools/chat.ts`, page `src/page/chat.ts` (`rawFields`, `renderSystemContent`) + `chat-helpers.ts` (`toMessageRecord`) | Reference only: the MCP keeps this tool. The record has `whisperCount`, never `whisper`. |
 | Combat stats | MCP tool `get-combat-stats`: `../fvtt-mcp-dnd5e/src/tools/combat-stats.ts` (the fold is pure and unit-tested) over the page scan `src/page/combat-stats.ts` | Folds the stat stamps Battle Flow (`../fvtt-mod-battleflow`) writes onto chat messages. Without that module in the world, there are no stats. |
 | Party snapshots, session-diary page | MCP tools `manage-actors` (`export`, `get`) and `manage-journals` (`update`) | |
 | Illustrations | `../fvtt-mcp-artificer/.claude/skills/illustration-builder/` + the artificer MCP tools | |

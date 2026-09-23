@@ -1,0 +1,86 @@
+import * as path from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { expandPath, loadConfig } from '../config.js';
+import type { Exec, HealthDeps } from '../health.js';
+import { StatusTool } from './status.js';
+
+const ENV = {
+  FOUNDRY_SCRIBE_USER: 'Scribe Assistant',
+  FOUNDRY_SCRIBE_PASSWORD: 'hunter2',
+  SCRIBE_CAMPAIGN_REPO: 'C:\\camp',
+  SCRIBE_PYTHON: 'C:\\py\\python.exe',
+  SCRIBE_EDGE: 'C:\\edge\\msedge.exe',
+  SystemRoot: 'C:\\Windows',
+};
+
+function deps(over: { env?: NodeJS.ProcessEnv; missing?: string[]; exec?: Exec } = {}): HealthDeps {
+  const missing = new Set(over.missing ?? []);
+  return {
+    config: loadConfig(over.env ?? ENV),
+    exec:
+      over.exec ??
+      (async file => ({ code: 0, stdout: `${path.basename(file)} 1.0\n`, stderr: '' })),
+    exists: p => !missing.has(p),
+  };
+}
+
+describe('scribe-status', () => {
+  it('is ready when every probe passes, and never prints the password', async () => {
+    const out = await new StatusTool(deps()).handleStatus({});
+    expect(out.ready).toBe(true);
+    expect(out.defaultHost).toBe('molten');
+    expect(out.checks.identity.detail).toBe('"Scribe Assistant" (password set)');
+    expect(JSON.stringify(out)).not.toContain('hunter2');
+    expect(out.checks.python.detail).toContain('C:\\py\\python.exe');
+  });
+
+  it('names the fix for a missing venv, campaign repo, login and browser', async () => {
+    const out = await new StatusTool(
+      deps({
+        env: { SCRIBE_PYTHON: 'C:\\py\\python.exe', SCRIBE_EDGE: 'C:\\edge\\msedge.exe' },
+        missing: ['C:\\py\\python.exe', 'C:\\edge\\msedge.exe'],
+      })
+    ).handleStatus({});
+    expect(out.ready).toBe(false);
+    expect(out.checks.python.detail).toMatch(/setup\.ps1/);
+    expect(out.checks.campaignRepo.detail).toMatch(/SCRIBE_CAMPAIGN_REPO/);
+    expect(out.checks.identity.detail).toMatch(/FOUNDRY_SCRIBE_USER/);
+    expect(out.checks.edge.detail).toMatch(/SCRIBE_EDGE/);
+  });
+
+  it('flags a campaign repo without campaign.json and a set user without a password', async () => {
+    const out = await new StatusTool(
+      deps({
+        env: { ...ENV, FOUNDRY_SCRIBE_PASSWORD: '' },
+        missing: [path.join('C:\\camp', 'campaign.json')],
+      })
+    ).handleStatus({});
+    expect(out.checks.campaignRepo).toEqual({ ok: false, detail: 'C:\\camp has no campaign.json' });
+    expect(out.checks.identity.detail).toMatch(/FOUNDRY_SCRIBE_PASSWORD is not set/);
+  });
+
+  it('reports a command that fails to run', async () => {
+    const exec: Exec = async file =>
+      file === 'ffmpeg'
+        ? { code: null, stdout: '', stderr: 'spawn ffmpeg ENOENT' }
+        : { code: 0, stdout: 'ok\n', stderr: '' };
+    const out = await new StatusTool(deps({ exec })).handleStatus({});
+    expect(out.checks.ffmpeg).toEqual({
+      ok: false,
+      detail: 'ffmpeg not on PATH: run scripts/setup.ps1',
+    });
+    expect(out.ready).toBe(false);
+  });
+});
+
+describe('config', () => {
+  it('expands %VAR% paths and defaults an unknown host to molten', () => {
+    expect(expandPath('%USERPROFILE%\\x', { USERPROFILE: 'C:\\Users\\u' })).toBe('C:\\Users\\u\\x');
+    expect(expandPath('%NOPE%\\x', {})).toBe('%NOPE%\\x');
+    expect(loadConfig({ FOUNDRY_HOST: 'LOCAL' }).defaultHost).toBe('local');
+    expect(loadConfig({ FOUNDRY_HOST: 'generic' }).defaultHost).toBe('molten');
+    expect(loadConfig({ SystemRoot: 'D:\\Win' }).tar).toBe(
+      path.join('D:\\Win', 'System32', 'tar.exe')
+    );
+  });
+});

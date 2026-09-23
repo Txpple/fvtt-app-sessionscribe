@@ -1,0 +1,10 @@
+{
+  "_comment": "House convention registers this server at USER scope: claude mcp add -s user scribe -e FOUNDRY_HOST=molten -- node <abs path>/dist/index.js. FOUNDRY_HOST is the default host for Foundry reads (molten | local); every read tool can override it per call.",
+  "mcpServers": {
+    "scribe": {
+      "command": "C:/Program Files/nodejs/node.exe",
+      "args": ["D:/Workbench/FVTT/Repos/fvtt-app-sessionscribe/dist/index.js"],
+      "env": { "FOUNDRY_HOST": "molten" }
+    }
+  }
+}
