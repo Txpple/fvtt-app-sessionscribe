@@ -14,8 +14,9 @@ a session and writes the session record into the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-23).** Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's
-3.0 decisions #16 and #17). All eight tools and the skill have landed.
+**State (2026-09-23).** Read [NEXT-SESSION.md](NEXT-SESSION.md) first: it is the handoff, the
+work left in order with its gates. Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing
+that repo's 3.0 decisions #16 and #17). All eight tools and the skill have landed.
 - **Proven:**
   - build-transcript: parity on the 9 real sessions.
   - fetch-recording: the real 2026-09-22 zip.
@@ -135,8 +136,9 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   reader; never live APIs.
 - **Tools do, skills decide.** Correctness goes in tested code; judgment (recap voice, which beats
   are memorable, curation) stays in the skill.
-- Commit directly to `main`. MIT license, author Txpple, GitHub remote `Txpple/<repo>` (this repo
-  has none yet).
+- Commit directly to `main` and push. MIT license, author Txpple. The remote is
+  `Txpple/fvtt-app-sessionscribe`, created **private** (the tool siblings are public; flipping
+  it is the owner's call).
 
 ## Machine gotchas (Windows)
 
