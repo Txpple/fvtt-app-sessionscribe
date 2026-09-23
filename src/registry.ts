@@ -8,6 +8,7 @@ import { BuildTranscriptTool } from './tools/build-transcript.js';
 import { ExportSessionChatTool } from './tools/export-session-chat.js';
 import { FetchRecordingTool } from './tools/fetch-recording.js';
 import { type StatusDeps, StatusTool } from './tools/status.js';
+import { TranscribeRecordingTool } from './tools/transcribe-recording.js';
 
 export type ToolDeps = StatusDeps;
 
@@ -21,12 +22,14 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
   const status = new StatusTool(deps);
   const combat = new AnalyzeCombatTool(deps);
   const fetchRec = new FetchRecordingTool(deps);
+  const transcribe = new TranscribeRecordingTool(deps);
   const chat = new ExportSessionChatTool(deps);
   const transcript = new BuildTranscriptTool(deps);
 
   const handlers: ToolRegistry['handlers'] = {
     'scribe-status': args => status.handleStatus(args),
     'fetch-recording': args => fetchRec.handleFetchRecording(args),
+    'transcribe-recording': args => transcribe.handleTranscribeRecording(args),
     'export-session-chat': args => chat.handleExportSessionChat(args),
     'build-transcript': args => transcript.handleBuildTranscript(args),
     'analyze-combat': args => combat.handleAnalyzeCombat(args),
@@ -35,6 +38,7 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
   const definitions = [
     ...status.getToolDefinitions(),
     ...fetchRec.getToolDefinitions(),
+    ...transcribe.getToolDefinitions(),
     ...chat.getToolDefinitions(),
     ...transcript.getToolDefinitions(),
     ...combat.getToolDefinitions(),

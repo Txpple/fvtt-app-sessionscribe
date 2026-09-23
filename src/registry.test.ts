@@ -27,6 +27,7 @@ describe('tool registry', () => {
       'export-session-chat',
       'fetch-recording',
       'scribe-status',
+      'transcribe-recording',
     ]);
     expect(Object.keys(handlers).sort()).toEqual(tools.map(t => t.name).sort());
   });
@@ -57,6 +58,7 @@ describe('tool registry', () => {
       expect(tools.map(t => t.name)).toEqual([
         'scribe-status',
         'fetch-recording',
+        'transcribe-recording',
         'export-session-chat',
         'build-transcript',
         'analyze-combat',
