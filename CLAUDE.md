@@ -65,7 +65,7 @@ against the sandbox will be `scripts/verify-*.mjs` / `scripts/parity-*.mjs`, run
 | `export-session-chat` | the scribe's use of MCP `export-chat-log` (that tool stays in the MCP for general use) | ✅ offline; sandbox parity pending (`scripts/parity-chat.mjs`) |
 | `build-transcript` | `… align`, fixing whispers (never tagged; 77 across 9 sessions) + a new `transcript-public.md` | ✅ parity PASS on all 9 real sessions (`scripts/parity-transcript.mjs`, offline) |
 | `analyze-combat` | MCP `get-combat-stats` (fold ported verbatim: `src/analytics/combat.ts`) | ✅ offline; sandbox parity pending (`scripts/parity-combat.mjs`) |
-| `snapshot-party` | hand-run `manage-actors export` per PC | pending |
+| `snapshot-party` | hand-run `manage-actors export` per PC | ✅ offline; sandbox byte-parity pending (`scripts/parity-snapshot.mjs`) |
 | `render-pdf` | hand-run Edge + `pdf-preview.mjs` | pending |
 
 Foundry reads will run in a **one-shot child process**, never in the server:

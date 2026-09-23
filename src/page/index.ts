@@ -9,6 +9,7 @@
 
 import { scanSessionChat } from './chat.js';
 import { scanCombatStats } from './combat-stats.js';
+import { exportParty } from './party.js';
 import { probe } from './probe.js';
 
 const PAGE_API_VERSION = 1;
@@ -24,4 +25,5 @@ window.__scribe = {
   probe: jsonOp(probe),
   scanCombatStats: jsonOp(scanCombatStats),
   scanSessionChat: jsonOp(scanSessionChat),
+  exportParty: jsonOp(exportParty),
 };

@@ -50,6 +50,7 @@ describe('page bundle', () => {
     vm.runInContext(await bundleSource(), context);
 
     expect(Object.keys(window.__scribe).sort()).toEqual([
+      'exportParty',
       'probe',
       'scanCombatStats',
       'scanSessionChat',

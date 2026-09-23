@@ -27,6 +27,7 @@ describe('tool registry', () => {
       'export-session-chat',
       'fetch-recording',
       'scribe-status',
+      'snapshot-party',
       'transcribe-recording',
     ]);
     expect(Object.keys(handlers).sort()).toEqual(tools.map(t => t.name).sort());
@@ -62,6 +63,7 @@ describe('tool registry', () => {
         'export-session-chat',
         'build-transcript',
         'analyze-combat',
+        'snapshot-party',
       ]);
       const result = await client.callTool({ name: 'scribe-status', arguments: {} });
       expect(result.isError).toBeFalsy();
