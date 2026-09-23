@@ -10,7 +10,12 @@ const exec: Exec = async () => ({ code: 0, stdout: 'fake 1.0\n', stderr: '' });
 
 function build() {
   const config = loadConfig({ SCRIBE_CAMPAIGN_REPO: 'C:\\camp' });
-  return buildToolRegistry({ config, exec, exists: () => true });
+  return buildToolRegistry({
+    config,
+    exec,
+    exists: () => true,
+    reader: async req => ({ ok: false, host: req.host, error: 'offline' }),
+  });
 }
 
 describe('tool registry', () => {

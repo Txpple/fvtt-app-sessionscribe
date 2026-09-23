@@ -3,10 +3,9 @@
 // source of truth; the advertised `tools` list is DERIVED from it, so the two cannot drift, and a
 // handler without a matching definition fails fast at startup.
 
-import type { HealthDeps } from './health.js';
-import { StatusTool } from './tools/status.js';
+import { type StatusDeps, StatusTool } from './tools/status.js';
 
-export type ToolDeps = HealthDeps;
+export type ToolDeps = StatusDeps;
 
 export interface ToolRegistry {
   tools: Array<{ name: string; description: string; inputSchema: Record<string, unknown> }>;

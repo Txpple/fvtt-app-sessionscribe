@@ -1,9 +1,10 @@
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { expandPath, loadConfig } from '../config.js';
-import type { Exec, HealthDeps } from '../health.js';
+import type { WorldReader } from '../foundry/read.js';
+import type { Exec } from '../health.js';
 import { CAMPAIGN_JSON, makeTempRepo, removeTempRepo } from '../testing/campaign-fixture.js';
-import { StatusTool } from './status.js';
+import { type StatusDeps, StatusTool } from './status.js';
 
 describe('scribe-status record', () => {
   it('summarises the record, details one session, and reports a broken repo without failing', async () => {
@@ -38,7 +39,15 @@ const ENV = {
   SystemRoot: 'C:\\Windows',
 };
 
-function deps(over: { env?: NodeJS.ProcessEnv; missing?: string[]; exec?: Exec } = {}): HealthDeps {
+const noReader: WorldReader = async req => ({
+  ok: false,
+  host: req.host,
+  error: 'not in this test',
+});
+
+function deps(
+  over: { env?: NodeJS.ProcessEnv; missing?: string[]; exec?: Exec; reader?: WorldReader } = {}
+): StatusDeps {
   const missing = new Set(over.missing ?? []);
   return {
     config: loadConfig(over.env ?? ENV),
@@ -46,6 +55,7 @@ function deps(over: { env?: NodeJS.ProcessEnv; missing?: string[]; exec?: Exec }
       over.exec ??
       (async file => ({ code: 0, stdout: `${path.basename(file)} 1.0\n`, stderr: '' })),
     exists: p => !missing.has(p),
+    reader: over.reader ?? noReader,
   };
 }
 
@@ -107,5 +117,38 @@ describe('config', () => {
     expect(loadConfig({ SystemRoot: 'D:\\Win' }).tar).toBe(
       path.join('D:\\Win', 'System32', 'tar.exe')
     );
+  });
+});
+
+describe('scribe-status connect', () => {
+  it('joins through the reader with the campaign worldId and reports the world', async () => {
+    const root = makeTempRepo({ 'campaign.json': CAMPAIGN_JSON });
+    try {
+      const seen: unknown[] = [];
+      const reader: WorldReader = async req => {
+        seen.push(req);
+        return { ok: true, host: req.host, readAt: '2026-01-01T00:00:00.000Z' };
+      };
+      const tool = new StatusTool(deps({ env: { ...ENV, SCRIBE_CAMPAIGN_REPO: root }, reader }));
+      const off = await tool.handleStatus({});
+      expect(off.world).toBeUndefined();
+      expect(seen).toEqual([]);
+      const on = await tool.handleStatus({ connect: true, host: 'local' });
+      expect(seen).toEqual([{ op: 'probe', host: 'local', worldId: 'lost-mine' }]);
+      expect(on.world).toEqual({ ok: true, host: 'local', readAt: '2026-01-01T00:00:00.000Z' });
+    } finally {
+      removeTempRepo(root);
+    }
+  });
+
+  it('still proves the login when there is no campaign to check against', async () => {
+    const seen: unknown[] = [];
+    const reader: WorldReader = async req => {
+      seen.push(req);
+      return { ok: false, host: req.host, error: 'world not running' };
+    };
+    const out = await new StatusTool(deps({ reader })).handleStatus({ connect: true });
+    expect(seen).toEqual([{ op: 'probe', host: 'molten' }]);
+    expect(out.world).toEqual({ ok: false, host: 'molten', error: 'world not running' });
   });
 });

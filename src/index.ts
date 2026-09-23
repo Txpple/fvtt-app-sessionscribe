@@ -6,12 +6,18 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { config } from './config.js';
+import { childReader } from './foundry/read.js';
 import { realExec, realExists } from './health.js';
 import { buildToolRegistry } from './registry.js';
 import { createServer } from './server.js';
 
 async function main(): Promise<void> {
-  const registry = buildToolRegistry({ config, exec: realExec, exists: realExists });
+  const registry = buildToolRegistry({
+    config,
+    exec: realExec,
+    exists: realExists,
+    reader: childReader(),
+  });
   const mcp = createServer(registry, config.server);
 
   const shutdown = (): void => process.exit(0);

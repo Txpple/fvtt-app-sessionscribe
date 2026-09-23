@@ -1,10 +1,12 @@
 // scribe-status: cold-start diagnosability and the state of the record. Is every piece of the
 // pipeline usable on this machine, is the campaign repo wired and valid, is the scribe's own
-// Foundry login configured, and what does each session directory hold against today's
-// `sessions.outputs`.
+// Foundry login configured (and, with `connect`, does it actually get into the right world), and
+// what does each session directory hold against today's `sessions.outputs`.
 
 import { z } from 'zod';
 import { loadCampaign } from '../campaign.js';
+import { HOSTS } from '../config.js';
+import type { WorldReader } from '../foundry/read.js';
 import {
   type HealthDeps,
   probeCampaignRepo,
@@ -17,15 +19,27 @@ import {
 import { recordDetail, recordSummary } from '../record.js';
 import { toInputSchema } from '../utils/schema.js';
 
+export const hostSchema = z
+  .enum(HOSTS)
+  .optional()
+  .describe('Which Foundry: molten (prod) or local (the sandbox). Default: the registration’s.');
+
 const statusSchema = z.object({
   date: z
     .string()
     .optional()
     .describe('One session in full (YYYY-MM-DD or its directory name); default: every session.'),
+  connect: z
+    .boolean()
+    .default(false)
+    .describe('Also join Foundry as the scribe and report the world, the GMs and Battle Flow.'),
+  host: hostSchema,
 });
 
+export type StatusDeps = HealthDeps & { reader: WorldReader };
+
 export class StatusTool {
-  constructor(private readonly deps: HealthDeps) {}
+  constructor(private readonly deps: StatusDeps) {}
 
   getToolDefinitions() {
     return [
@@ -33,16 +47,16 @@ export class StatusTool {
         name: 'scribe-status',
         description:
           'Health check and the state of the record: transcription Python, ffmpeg, tar, the PDF ' +
-          "browser, the campaign repo, the scribe's Foundry login; then per session which of " +
-          "the campaign's outputs, pipeline files and party snapshot exist. Call first on a cold " +
-          'start.',
+          "browser, the campaign repo, the scribe's Foundry login (connect: true joins to prove " +
+          "it); then per session which of the campaign's outputs, pipeline files and party " +
+          'snapshot exist. Call first on a cold start.',
         inputSchema: toInputSchema(statusSchema),
       },
     ];
   }
 
   async handleStatus(args: unknown) {
-    const { date } = statusSchema.parse(args);
+    const { date, connect, host } = statusSchema.parse(args);
     const [python, ffmpeg, tar] = await Promise.all([
       probePython(this.deps),
       probeFfmpeg(this.deps),
@@ -56,11 +70,30 @@ export class StatusTool {
       campaignRepo: probeCampaignRepo(this.deps),
       identity: probeIdentity(this.deps),
     };
+    const record = this.record(date);
     return {
       ready: Object.values(checks).every(c => c.ok),
       defaultHost: this.deps.config.defaultHost,
       checks,
-      ...this.record(date),
+      ...(connect ? { world: await this.world(host ?? this.deps.config.defaultHost) } : {}),
+      ...record,
+    };
+  }
+
+  private async world(host: (typeof HOSTS)[number]) {
+    let worldId: string | undefined;
+    try {
+      worldId = loadCampaign(this.deps.config.campaignRepo).worldId;
+    } catch {
+      // No campaign to check against: still worth proving the login itself.
+    }
+    const r = await this.deps.reader({ op: 'probe', host, ...(worldId ? { worldId } : {}) });
+    return {
+      ok: r.ok,
+      host: r.host,
+      ...(r.readAt ? { readAt: r.readAt } : {}),
+      ...(r.probe ? { probe: r.probe } : {}),
+      ...(r.error ? { error: r.error } : {}),
     };
   }
 
