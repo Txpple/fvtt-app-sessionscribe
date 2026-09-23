@@ -63,7 +63,7 @@ against the sandbox will be `scripts/verify-*.mjs` / `scripts/parity-*.mjs`, run
 | `fetch-recording` | `… fetch` (Craig link or the DM's zip) | pending |
 | `transcribe-recording` | `… transcribe` (a detached job, not a blocking call) | pending |
 | `export-session-chat` | the scribe's use of MCP `export-chat-log` (that tool stays in the MCP for general use) | ✅ offline; sandbox parity pending (`scripts/parity-chat.mjs`) |
-| `build-transcript` | `… align`, fixing whispers (never tagged; 77 across 9 sessions) + a new `transcript-public.md` | pending |
+| `build-transcript` | `… align`, fixing whispers (never tagged; 77 across 9 sessions) + a new `transcript-public.md` | ✅ parity PASS on all 9 real sessions (`scripts/parity-transcript.mjs`, offline) |
 | `analyze-combat` | MCP `get-combat-stats` (fold ported verbatim: `src/analytics/combat.ts`) | ✅ offline; sandbox parity pending (`scripts/parity-combat.mjs`) |
 | `snapshot-party` | hand-run `manage-actors export` per PC | pending |
 | `render-pdf` | hand-run Edge + `pdf-preview.mjs` | pending |

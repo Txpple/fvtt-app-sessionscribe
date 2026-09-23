@@ -4,6 +4,7 @@
 // handler without a matching definition fails fast at startup.
 
 import { AnalyzeCombatTool } from './tools/analyze-combat.js';
+import { BuildTranscriptTool } from './tools/build-transcript.js';
 import { ExportSessionChatTool } from './tools/export-session-chat.js';
 import { type StatusDeps, StatusTool } from './tools/status.js';
 
@@ -19,16 +20,19 @@ export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
   const status = new StatusTool(deps);
   const combat = new AnalyzeCombatTool(deps);
   const chat = new ExportSessionChatTool(deps);
+  const transcript = new BuildTranscriptTool(deps);
 
   const handlers: ToolRegistry['handlers'] = {
     'scribe-status': args => status.handleStatus(args),
     'export-session-chat': args => chat.handleExportSessionChat(args),
+    'build-transcript': args => transcript.handleBuildTranscript(args),
     'analyze-combat': args => combat.handleAnalyzeCombat(args),
   };
 
   const definitions = [
     ...status.getToolDefinitions(),
     ...chat.getToolDefinitions(),
+    ...transcript.getToolDefinitions(),
     ...combat.getToolDefinitions(),
   ];
 
