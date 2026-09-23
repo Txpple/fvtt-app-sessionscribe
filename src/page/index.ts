@@ -7,6 +7,7 @@
 // Document or a Map crossing it either throws opaquely or arrives as `{}`. Stringifying in-page
 // makes the plain-data boundary explicit and one place.
 
+import { scanSessionChat } from './chat.js';
 import { scanCombatStats } from './combat-stats.js';
 import { probe } from './probe.js';
 
@@ -22,4 +23,5 @@ window.__scribe = {
   version: jsonOp(() => PAGE_API_VERSION),
   probe: jsonOp(probe),
   scanCombatStats: jsonOp(scanCombatStats),
+  scanSessionChat: jsonOp(scanSessionChat),
 };

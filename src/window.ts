@@ -49,7 +49,8 @@ export function resolveWindow(opts: {
   since?: string | undefined;
   until?: string | undefined;
 }): TimeWindow {
-  const rec = opts.sessionDir ? recordingWindow(opts.sessionDir) : undefined;
+  const needsRecording = opts.since === undefined || opts.until === undefined;
+  const rec = opts.sessionDir && needsRecording ? recordingWindow(opts.sessionDir) : undefined;
   const since = opts.since !== undefined ? parseInstant('since', opts.since) : (rec?.since ?? 0);
   const until = opts.until !== undefined ? parseInstant('until', opts.until) : rec?.until;
   if (until !== undefined && until < since) throw new Error('until is before since');
