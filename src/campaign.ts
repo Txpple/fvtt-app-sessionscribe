@@ -34,6 +34,8 @@ export const CampaignSchema = z.looseObject({
       pdf: z.boolean().default(false),
       skewSeconds: z.number().default(0),
       illustrations: z.boolean().default(false),
+      /** Discord id or username → the transcript's speaker label (a character name). */
+      speakers: z.record(z.string(), z.string()).optional(),
     })
     .default({
       dir: 'sessions',

@@ -13,7 +13,16 @@ import {
   sessionDate,
 } from './campaign.js';
 
-const AUDIO_EXTS = new Set(['.flac', '.ogg', '.oga', '.opus', '.m4a', '.aac', '.wav', '.mp3']);
+export const AUDIO_EXTS = new Set([
+  '.flac',
+  '.ogg',
+  '.oga',
+  '.opus',
+  '.m4a',
+  '.aac',
+  '.wav',
+  '.mp3',
+]);
 const CRAIG_KEEP_DAYS = 7;
 
 /** The pipeline's intermediates, in the order the pipeline writes them. */
@@ -41,7 +50,7 @@ function completeness(present: number, total: number): Completeness {
   return present === 0 ? 'missing' : 'partial';
 }
 
-interface FileSet {
+export interface FileSet {
   state: Completeness;
   present: string[];
   missing: string[];
@@ -51,6 +60,15 @@ function fileSet(dir: string, names: string[]): FileSet {
   const present = names.filter(n => fs.existsSync(path.join(dir, n)));
   const missing = names.filter(n => !present.includes(n));
   return { state: completeness(present.length, names.length), present, missing };
+}
+
+/** The audio files of an extracted recording, in track order. */
+export function audioTracks(tracksDir: string): string[] {
+  if (!fs.existsSync(tracksDir)) return [];
+  return fs
+    .readdirSync(tracksDir)
+    .filter(f => AUDIO_EXTS.has(path.extname(f).toLowerCase()))
+    .sort();
 }
 
 export interface SessionDetail {
@@ -87,11 +105,6 @@ export function sessionDetail(campaign: Campaign, dirName: string): SessionDetai
     .map(e => e.name)
     .sort();
 
-  const tracksDir = path.join(dir, 'audio', 'tracks');
-  const audioTracks = fs.existsSync(tracksDir)
-    ? fs.readdirSync(tracksDir).filter(f => AUDIO_EXTS.has(path.extname(f).toLowerCase())).length
-    : 0;
-
   const detail: SessionDetail = {
     dir: dirName,
     date,
@@ -100,7 +113,7 @@ export function sessionDetail(campaign: Campaign, dirName: string): SessionDetai
     outputs,
     snapshot,
     other,
-    audioTracks,
+    audioTracks: audioTracks(path.join(dir, 'audio', 'tracks')).length,
   };
   if (campaign.sessions.illustrations) {
     const img = path.join(dir, 'img');

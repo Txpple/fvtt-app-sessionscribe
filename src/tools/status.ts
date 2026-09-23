@@ -16,6 +16,7 @@ import {
   probePython,
   probeTar,
 } from '../health.js';
+import { isActive, listJobs, waitForJobs } from '../jobs.js';
 import { recordDetail, recordSummary } from '../record.js';
 import { toInputSchema } from '../utils/schema.js';
 
@@ -34,6 +35,15 @@ const statusSchema = z.object({
     .default(false)
     .describe('Also join Foundry as the scribe and report the world, the GMs and Battle Flow.'),
   host: hostSchema,
+  waitSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(300)
+    .default(0)
+    .describe(
+      "With date: wait up to this long for the session's fetch / transcribe jobs to finish."
+    ),
 });
 
 export type StatusDeps = HealthDeps & { reader: WorldReader };
@@ -56,7 +66,7 @@ export class StatusTool {
   }
 
   async handleStatus(args: unknown) {
-    const { date, connect, host } = statusSchema.parse(args);
+    const { date, connect, host, waitSeconds } = statusSchema.parse(args);
     const [python, ffmpeg, tar] = await Promise.all([
       probePython(this.deps),
       probeFfmpeg(this.deps),
@@ -70,7 +80,7 @@ export class StatusTool {
       campaignRepo: probeCampaignRepo(this.deps),
       identity: probeIdentity(this.deps),
     };
-    const record = this.record(date);
+    const record = await this.record(date, waitSeconds);
     return {
       ready: Object.values(checks).every(c => c.ok),
       defaultHost: this.deps.config.defaultHost,
@@ -97,17 +107,28 @@ export class StatusTool {
     };
   }
 
-  private record(date: string | undefined) {
+  private async record(date: string | undefined, waitSeconds: number) {
     try {
       const campaign = loadCampaign(this.deps.config.campaignRepo);
-      if (date) return { session: recordDetail(campaign, date) };
+      if (date) {
+        const detail = recordDetail(campaign, date);
+        const jobs = waitSeconds
+          ? await waitForJobs(detail.path, waitSeconds)
+          : listJobs(detail.path);
+        // Re-read after a wait: a finished job has written files.
+        return { session: { ...(waitSeconds ? recordDetail(campaign, date) : detail), jobs } };
+      }
+      const sessions = recordSummary(campaign).map(s => {
+        const active = listJobs(`${campaign.sessionsDir}/${s.dir}`).filter(isActive);
+        return active.length ? { ...s, jobs: active.map(j => `${j.kind} ${j.state}`) } : s;
+      });
       return {
         record: {
           campaign: campaign.name,
           worldId: campaign.worldId,
           outputs: campaign.sessions.outputs,
           pdf: campaign.sessions.pdf,
-          sessions: recordSummary(campaign),
+          sessions,
         },
       };
     } catch (e) {
