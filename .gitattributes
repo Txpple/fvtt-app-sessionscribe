@@ -1,0 +1,5 @@
+# LF in the repo, always (the family convention).
+* text=auto eol=lf
+
+# PowerShell wants CRLF.
+*.ps1   text eol=crlf
