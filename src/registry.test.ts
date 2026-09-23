@@ -21,7 +21,7 @@ function build() {
 describe('tool registry', () => {
   it('advertises exactly the tool surface, one definition per handler', () => {
     const { tools, handlers } = build();
-    expect(tools.map(t => t.name).sort()).toEqual(['scribe-status']);
+    expect(tools.map(t => t.name).sort()).toEqual(['analyze-combat', 'scribe-status']);
     expect(Object.keys(handlers).sort()).toEqual(tools.map(t => t.name).sort());
   });
 
@@ -48,7 +48,7 @@ describe('tool registry', () => {
     await client.connect(clientSide);
     try {
       const { tools } = await client.listTools();
-      expect(tools.map(t => t.name)).toEqual(['scribe-status']);
+      expect(tools.map(t => t.name)).toEqual(['scribe-status', 'analyze-combat']);
       const result = await client.callTool({ name: 'scribe-status', arguments: {} });
       expect(result.isError).toBeFalsy();
       const text = (result.content as Array<{ type: string; text: string }>)[0]?.text ?? '';

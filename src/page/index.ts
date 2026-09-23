@@ -7,6 +7,7 @@
 // Document or a Map crossing it either throws opaquely or arrives as `{}`. Stringifying in-page
 // makes the plain-data boundary explicit and one place.
 
+import { scanCombatStats } from './combat-stats.js';
 import { probe } from './probe.js';
 
 const PAGE_API_VERSION = 1;
@@ -20,4 +21,5 @@ function jsonOp(fn: Op): (args?: any) => Promise<string> {
 window.__scribe = {
   version: jsonOp(() => PAGE_API_VERSION),
   probe: jsonOp(probe),
+  scanCombatStats: jsonOp(scanCombatStats),
 };

@@ -49,7 +49,7 @@ describe('page bundle', () => {
     const context = vm.createContext({ window, game: fakeGame() });
     vm.runInContext(await bundleSource(), context);
 
-    expect(Object.keys(window.__scribe).sort()).toEqual(['probe', 'version']);
+    expect(Object.keys(window.__scribe).sort()).toEqual(['probe', 'scanCombatStats', 'version']);
     expect(JSON.parse(await window.__scribe.version())).toBe(1);
     const probe = JSON.parse(await window.__scribe.probe());
     expect(probe).toEqual({

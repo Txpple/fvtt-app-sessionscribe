@@ -3,6 +3,7 @@
 // source of truth; the advertised `tools` list is DERIVED from it, so the two cannot drift, and a
 // handler without a matching definition fails fast at startup.
 
+import { AnalyzeCombatTool } from './tools/analyze-combat.js';
 import { type StatusDeps, StatusTool } from './tools/status.js';
 
 export type ToolDeps = StatusDeps;
@@ -15,12 +16,14 @@ export interface ToolRegistry {
 
 export function buildToolRegistry(deps: ToolDeps): ToolRegistry {
   const status = new StatusTool(deps);
+  const combat = new AnalyzeCombatTool(deps);
 
   const handlers: ToolRegistry['handlers'] = {
     'scribe-status': args => status.handleStatus(args),
+    'analyze-combat': args => combat.handleAnalyzeCombat(args),
   };
 
-  const definitions = [...status.getToolDefinitions()];
+  const definitions = [...status.getToolDefinitions(), ...combat.getToolDefinitions()];
 
   const tools = Object.keys(handlers).map(name => {
     const def = definitions.find(d => d.name === name);
