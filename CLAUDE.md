@@ -14,12 +14,13 @@ a session and writes the session record into the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-23).** Read [NEXT-SESSION.md](NEXT-SESSION.md) first: it is the handoff, the
+**State (2026-09-24).** Read [NEXT-SESSION.md](NEXT-SESSION.md) first: it is the handoff, the
 work left in order with its gates. Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing
 that repo's 3.0 decisions #16 and #17). All eight tools and the skill have landed.
 - **Proven:**
   - build-transcript: parity on the 9 real sessions.
-  - fetch-recording: the real 2026-09-22 zip.
+  - fetch-recording: the real 2026-09-22 zip, and the **Craig link** (2026-09-24, session 8
+    replayed end to end on prod into a scratch clone).
   - transcribe-recording: on CUDA, resume included.
   - render-pdf: 2026-09-22's four PDFs.
 - **Proven live on the sandbox, as Scribe Assistant:**
@@ -28,7 +29,6 @@ that repo's 3.0 decisions #16 and #17). All eight tools and the skill have lande
 - **Retired:** the MCP's copies went in `fvtt-mcp-dnd5e` 4.0.0 (`get-combat-stats`, the
   `session-scribe` skill and `session_scribe.py`). Battle Flow and the campaign repo point here.
   `export-chat-log` stays in the MCP for good as the general chat exporter.
-- **Not yet proven:** the Craig *link* path. It needs a fresh recording; it is covered on fakes.
 
 ## Commands
 
@@ -130,6 +130,12 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
     identity.
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point
   `SCRIBE_CAMPAIGN_REPO` at it), never the real one.
+  - The running `scribe` server can't be re-pointed without a restart. Instead, drive a fresh
+    `dist/index.js` over stdio with that env; `dotenv` does not override a set variable.
+  - A replay reads prod exactly as a real session does, and writes nothing to the world.
+- **A user's first join to a world runs modules' first-run writes.** Dice So Nice whispers a
+  welcome and sets a user flag. Scribe Assistant's first prod join did this (2026-09-24 01:19Z).
+  It happens once per user per world, so `verify-reader` can't see it after the first time.
 
 ## Family conventions (from the sister repos)
 

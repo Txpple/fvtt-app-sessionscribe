@@ -13,6 +13,10 @@
 //                                                      (400 JOB_ALREADY_EXISTS → just poll)
 //   GET  {base}/api/v1/recordings/{id}/job?key=      → { job: { status, state, outputFileName,
 //                                                        outputSize } | null }          (poll)
+//                                                      state is an object (live 2026-09-24):
+//                                                        { type: "encoding", tracks: { "3":
+//                                                          { progress: 93.6, time } } }; the
+//                                                        file name appears while still running
 //   GET  {base}/dl/{outputFileName}                  → the cooked archive
 // Legacy pages (pre-ferret) used /api/recording/{id} + /users + /duration + /notes; kept as the
 // fallback when the ferret routes 404.
@@ -110,6 +114,20 @@ export function parseInfoTxt(text: string): {
     channel: withoutId(field('Channel')),
     users,
   };
+}
+
+/** The cook job's `state` for the progress line: "encoding track 3 93%", never "[object Object]". */
+export function describeCookState(state: unknown): string {
+  if (state == null) return '-';
+  if (typeof state !== 'object') return String(state);
+  const s = state as { type?: unknown; tracks?: Record<string, { progress?: unknown }> };
+  const type = typeof s.type === 'string' ? s.type : 'working';
+  const tracks = s.tracks && typeof s.tracks === 'object' ? Object.entries(s.tracks) : [];
+  const current = tracks.at(-1);
+  if (!current) return type;
+  const [n, t] = current;
+  const pct = typeof t?.progress === 'number' ? ` ${Math.floor(t.progress)}%` : '';
+  return `${type} track ${n}${pct}`;
 }
 
 // --- the API client (fetch injected; the tests never touch the network) ------------------------
@@ -245,7 +263,7 @@ export class CraigClient {
       if (job.outputFileName && status !== 'queued' && status !== 'running') {
         return job.outputFileName as string;
       }
-      opts.onPoll?.(`${status ?? 'no job yet'} (${job.state ?? '-'})`);
+      opts.onPoll?.(`${status ?? 'no job yet'} (${describeCookState(job.state)})`);
       await sleep(opts.pollMs ?? 4_000);
     }
     throw new Error(

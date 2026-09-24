@@ -140,11 +140,21 @@ def cmd_transcribe(args) -> int:
                 out_tracks.append({"file": path.name, "speaker": speaker, "segments": track["segments"]})
                 total_segments += len(track["segments"])
                 continue
-        status("running", "transcribing", f"track {i}/{len(files)}: {path.name} ({speaker})")
+        where = f"track {i}/{len(files)}: {path.name} ({speaker})"
+        status("running", "transcribing", where)
         t0 = time.time()
         segments, seg_info = model.transcribe(str(path), vad_filter=True, language=args.language or None)
-        segs = [{"start": round(s.start, 2), "end": round(s.end, 2), "text": s.text.strip()}
-                for s in segments if s.text.strip()]
+        # segments is lazy: the work happens in this loop, so it is where progress is known. The DM's
+        # three-hour track takes ~11 min on large-v3; without this the status sat still that long.
+        segs = []
+        reported = t0
+        for s in segments:
+            if s.text.strip():
+                segs.append({"start": round(s.start, 2), "end": round(s.end, 2), "text": s.text.strip()})
+            if time.time() - reported >= 15:
+                reported = time.time()
+                status("running", "transcribing",
+                       f"{where} {100 * s.end / max(seg_info.duration, 1):.0f}%")
         write_json(done_file, {"model": args.model, "device": device, "segments": segs}, indent=1)
         log(f"  {path.name} [{speaker}]: {len(segs)} segments, "
             f"{seg_info.duration:.0f}s audio in {time.time() - t0:.0f}s")

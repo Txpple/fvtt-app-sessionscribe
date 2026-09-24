@@ -153,7 +153,22 @@ describe('the ferret API', () => {
             init?.method === 'POST'
               ? { status: 400, body: { code: 'JOB_ALREADY_EXISTS' } }
               : ++polls < 3
-                ? { status: 200, body: { job: { status: 'running', state: { progress: polls } } } }
+                ? {
+                    status: 200,
+                    body: {
+                      job: {
+                        status: 'running',
+                        state: {
+                          type: 'encoding',
+                          tracks: {
+                            1: { progress: 100, warn: true },
+                            2: { progress: polls * 40.7 },
+                          },
+                        },
+                        outputFileName: 'AbC123xyz.flac.zip',
+                      },
+                    },
+                  }
                 : {
                     status: 200,
                     body: { job: { status: 'complete', outputFileName: 'AbC123xyz.flac.zip' } },
@@ -165,7 +180,7 @@ describe('the ferret API', () => {
     const polled: string[] = [];
     const file = await c.cook({ sleep: async () => {}, onPoll: s => polled.push(s) });
     expect(file).toBe('AbC123xyz.flac.zip');
-    expect(polled).toHaveLength(2);
+    expect(polled).toEqual(['running (encoding track 2 40%)', 'running (encoding track 2 81%)']);
     expect(seen[0]).toBe('POST /api/v1/recordings/AbC123xyz/job');
     expect(c.downloadUrl(file)).toBe('https://craig.horse/dl/AbC123xyz.flac.zip');
   });
