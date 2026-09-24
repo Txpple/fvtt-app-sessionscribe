@@ -11,7 +11,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
   - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.
-- **The offline gate** is green: 116 tests.
+- **The offline gate** is green: 126 tests.
 - **Proven for real:**
   - `build-transcript`: parity with the Python `align` on all 9 real sessions; the only
     differences are 77 whisper fixes.
