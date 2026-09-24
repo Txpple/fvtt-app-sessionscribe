@@ -1,8 +1,8 @@
 // render-pdf: print a session's outputs to PDF with headless Edge (recap.pdf from
 // recap-print.html, the rest from their own HTML), count the pages, refuse a PDF that came out
-// empty, and write a page-grid preview beside each so every page gets looked at before the files
-// go out. The judgment (a heading alone at a page foot, a split table, a near-empty page) is the
-// skill's; fix the HTML and render again.
+// empty, and write every page as a JPEG under audio/previews/ so every page gets looked at
+// before the files go out. The judgment (a heading alone at a page foot, a split table, a
+// near-empty page) is the skill's; fix the HTML and render again.
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -10,7 +10,14 @@ import { z } from 'zod';
 import { loadCampaign, OUTPUTS, resolveSessionDir } from '../campaign.js';
 import type { Config } from '../config.js';
 import type { Exec } from '../health.js';
-import { pdfTargets, printToPdf, writePreview } from '../pdf.js';
+import {
+  type PageGrabber,
+  pdfTargets,
+  playwrightGrabber,
+  printToPdf,
+  writePageImages,
+  writePreview,
+} from '../pdf.js';
 import { toInputSchema } from '../utils/schema.js';
 
 const RenderPdfSchema = z.object({
@@ -22,7 +29,7 @@ const RenderPdfSchema = z.object({
   preview: z
     .boolean()
     .default(true)
-    .describe('Write a page-grid preview of each PDF under audio/previews/ (gitignored).'),
+    .describe('Write every page of each PDF as a JPEG under audio/previews/ (gitignored).'),
 });
 
 export interface RenderPdfDeps {
@@ -30,6 +37,8 @@ export interface RenderPdfDeps {
   exec: Exec;
   /** How often to look for Edge's PDF (the tests shorten it). */
   pollMs?: number;
+  /** Rasterises a preview page (the tests inject a fake; the default is headless Chromium). */
+  grab?: PageGrabber;
 }
 
 export class RenderPdfTool {
@@ -42,8 +51,8 @@ export class RenderPdfTool {
         description:
           "Print a session's outputs to PDF with headless Edge: recap.pdf from recap-print.html " +
           '(never recap.html), the rest from their own HTML. Counts pages, refuses an empty ' +
-          'print, and writes a page-grid preview of each to look at every page in the Browser ' +
-          'pane.',
+          'print, and writes every page as a JPEG under audio/previews/ so each one can be ' +
+          'looked at before the files go out.',
         inputSchema: toInputSchema(RenderPdfSchema),
       },
     ];
@@ -70,6 +79,7 @@ export class RenderPdfTool {
     }
     const previews = path.join(sessionDir, 'audio', 'previews');
     if (p.preview) fs.mkdirSync(previews, { recursive: true });
+    const grab = this.deps.grab ?? playwrightGrabber;
     const rendered = [];
     for (const t of targets) {
       const { bytes, pages } = await printToPdf(
@@ -79,16 +89,24 @@ export class RenderPdfTool {
         t.pdf,
         this.deps.pollMs ? { pollMs: this.deps.pollMs } : {}
       );
-      const preview = p.preview
-        ? writePreview(t.pdf, path.join(previews, `${t.output}.preview.html`))
-        : undefined;
+      let images: string[] | undefined;
+      if (p.preview) {
+        const preview = writePreview(t.pdf, path.join(previews, `${t.output}.preview.html`));
+        images = writePageImages(await grab(preview), previews, t.output);
+        if (images.length !== pages) {
+          throw new Error(
+            `${t.output}.pdf has ${pages} pages but the preview drew ${images.length}: ` +
+              'the page images cannot be trusted (is pdf.js reachable?)'
+          );
+        }
+      }
       rendered.push({
         output: t.output,
         from: path.basename(t.html),
         pdf: t.pdf,
         pages,
         kb: Math.round(bytes / 1024),
-        ...(preview ? { preview } : {}),
+        ...(images ? { images } : {}),
       });
     }
     return {
@@ -96,8 +114,8 @@ export class RenderPdfTool {
       ...(p.preview
         ? {
             look:
-              `serve ${previews} on 127.0.0.1 and open each *.preview.html in the Browser pane ` +
-              '(wait for <body data-done="1">); they sit under audio/, gitignored, never the record',
+              'read every page image (<output>-NN.jpg, in order) before the files go out; ' +
+              'they sit under audio/, gitignored, never the record',
           }
         : {}),
     };

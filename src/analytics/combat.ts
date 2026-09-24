@@ -246,19 +246,24 @@ export function foldCombatLedger(scan: any): CombatLedger {
         tgt.timesHit++;
         // parts: [{type, amount}] POST-trait (second-pass field). Positive parts feed the
         // dealt-by-type meter; against the message rolls (pre-mitigation) they yield what the
-        // target's traits denied (resist/immune) or invited (vulnerable). Compared ONLY for
-        // part types named in the entry's own traits[] — and WITHOUT the entry's `multiplier`,
-        // which annotates the same halving the part amounts already carry (measured live
-        // 2026-08-27: resist necrotic, roll 9 → part 4.5, multiplier 0.5 — applying both
-        // double-counts). Sub-point rounding noise is ignored.
+        // target's traits denied (resist/immune, a modification) or invited (vulnerable).
+        //
+        // The entry's `multiplier` is the SAVE's (or a reaction's) halving, passed by Battle
+        // Flow into calculateDamage, so the expected part without traits is roll × multiplier,
+        // and the traits' share is what is left. The entry's `traits[]` label is NOT consulted:
+        // dnd5e folds that same multiplier into the per-part `active.multiplier` that Battle
+        // Flow reads the label from, so on a halved save "saved, no resistance" is labelled
+        // resistant and "saved and resistant" (× 0.25) gets no label at all (session 8's dragon
+        // breath, 2026-09-24: Gren 32 → 8 unlabelled, Morgash 32 → 16 "resistant"). The
+        // arithmetic is right in both cases. Sub-point rounding noise is ignored.
         for (const p of t.parts ?? []) {
           if (p.amount > 0) src.damageByType[p.type] = (src.damageByType[p.type] ?? 0) + p.amount;
         }
+        const mult = typeof t.multiplier === 'number' && t.multiplier > 0 ? t.multiplier : 1;
         for (const p of t.parts ?? []) {
-          if (!t.traits?.some((tr: any) => tr.type === p.type)) continue;
           const pre = rollsByType[p.type];
           if (pre === undefined || p.amount < 0) continue;
-          const diff = pre - p.amount;
+          const diff = pre * mult - p.amount;
           if (diff >= 1) tgt.mitigated += diff;
           else if (diff <= -1) tgt.amplified += -diff;
         }

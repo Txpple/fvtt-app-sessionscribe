@@ -1,12 +1,15 @@
 // The session's PDFs: each output's HTML printed by headless Edge (Chromium's print CSS: the
-// templates' @page footers and keep-together rules), counted, sanity-checked, and given a
-// page-grid preview to look at every page in the Browser pane before the files go out.
+// templates' @page footers and keep-together rules), counted, sanity-checked, and rasterised
+// page by page (a pdf.js preview page, opened by headless Chromium, every canvas saved as a
+// JPEG) so every page gets looked at before the files go out. The Browser pane used to do the
+// looking; hidden, it stalls pdf.js, so the pictures are files now.
 //
 // The one rule that is not "X.html → X.pdf": recap.pdf prints from recap-print.html, NEVER from
 // recap.html — recap.html is the email body, a table layout, and Chrome splits text inside table
 // cells across printed pages.
 
 import * as fs from 'node:fs';
+import { createRequire } from 'node:module';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -16,6 +19,7 @@ import type { Exec } from './health.js';
 /** Below this, the page did not load (an empty print is about 1 KB). */
 export const MIN_PDF_BYTES = 2_000;
 const EDGE_TIMEOUT_MS = 180_000;
+const PAGES_TIMEOUT_MS = 120_000;
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
 
 export interface PdfTarget {
@@ -127,4 +131,58 @@ await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;}
 document.body.setAttribute('data-done','1');})();</script></body></html>`
   );
   return out;
+}
+
+/** Every page of a preview (writePreview's page) as a JPEG, in page order. */
+export type PageGrabber = (previewHtml: string) => Promise<Buffer[]>;
+
+/**
+ * Playwright, resolved through fvtt-mcp-dnd5e's own copy (the family's one Chromium: the
+ * browsers under ms-playwright are installed for that version). Loaded on first use, so the
+ * server never holds a browser and the tests never need one.
+ */
+function loadPlaywright(): { chromium: any } {
+  const client = createRequire(import.meta.url).resolve('fvtt-mcp-dnd5e');
+  return createRequire(client)('playwright');
+}
+
+/**
+ * Open the preview from file:// in headless Chromium, wait for pdf.js to draw every page
+ * (<body data-done="1">), and export each canvas as a JPEG. Seconds per PDF; the browser is
+ * closed whatever happens.
+ */
+export const playwrightGrabber: PageGrabber = async previewHtml => {
+  const { chromium } = loadPlaywright();
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+    await page.goto(pathToFileURL(previewHtml).href);
+    await page.waitForFunction(() => document.body?.dataset.done === '1', null, {
+      timeout: PAGES_TIMEOUT_MS,
+    });
+    const urls: string[] = await page.evaluate(() =>
+      [...document.querySelectorAll('canvas')].map(c => c.toDataURL('image/jpeg', 0.85))
+    );
+    return urls.map(u => Buffer.from(u.slice(u.indexOf(',') + 1), 'base64'));
+  } finally {
+    await browser.close();
+  }
+};
+
+/**
+ * Write the page images as <dir>/<output>-NN.jpg, numbered from 01, and remove any higher
+ * numbers a longer earlier render left behind, so the folder never shows a stale page.
+ */
+export function writePageImages(images: readonly Buffer[], dir: string, output: string): string[] {
+  const name = (n: number) => path.join(dir, `${output}-${String(n).padStart(2, '0')}.jpg`);
+  const stale = new RegExp(`^${output.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-(\\d+)\\.jpg$`);
+  for (const f of fs.readdirSync(dir)) {
+    const m = stale.exec(f);
+    if (m && Number(m[1]) > images.length) fs.rmSync(path.join(dir, f), { force: true });
+  }
+  return images.map((img, i) => {
+    const file = name(i + 1);
+    fs.writeFileSync(file, img);
+    return file;
+  });
 }

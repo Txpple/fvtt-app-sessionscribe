@@ -2,7 +2,9 @@
 //   data    the complete native export, byte-compatible with fvtt-mcp-dnd5e's
 //           `manage-actors export` (toObject() + the exportSource envelope ClientDocument's
 //           exportToJSON writes), so it restores through the sheet's Import Data button
-//   digest  the facts the human-readable snapshot is written from, off the LIVE (derived) sheet
+//   digest  the facts the human-readable snapshot is written from, off the LIVE (derived) sheet:
+//           the sheet's numbers, the item charges, the feature pools' remaining uses and the
+//           active effects standing at the wrap
 // Read-only. A name that matches no actor, or several, is reported, never guessed at.
 //
 // dnd5e keeps weapon masteries and item properties in Sets; every Set is turned into an array
@@ -26,12 +28,50 @@ export interface PcDigest {
     max: number | null;
     quantity: number | null;
   }>;
+  /** Feature and spell pools with limited uses (Lay on Hands, Second Wind, superiority dice…). */
+  features: Array<{
+    name: string;
+    value: number | null;
+    max: number | null;
+    /** dnd5e's recovery period for the pool (lr, sr, day…), or null when it never recovers. */
+    recovery: string | null;
+  }>;
+  /** The active effects applied to the sheet right now: buffs, conditions, item passives. */
+  effects: Array<{
+    name: string;
+    /** The item or document the effect came from, by name, when it can be resolved. */
+    from: string | null;
+    /** A timed effect (rounds, turns or seconds), as opposed to an item's standing passive. */
+    temporary: boolean;
+    /** dnd5e's remaining-duration label ("3 Rounds", "1 Hour"), or null for a passive. */
+    duration: string | null;
+  }>;
 }
 
 const toArray = (v: unknown): string[] =>
   v instanceof Set ? [...v].map(String) : Array.isArray(v) ? v.map(String) : [];
 
-const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const num = (v: unknown): number | null => {
+  // uses.max is a formula string in the source; the derived sheet has it as a number, but a
+  // numeric string still counts (a bare "3" survives preparation on some item types).
+  if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+};
+
+const str = (v: unknown): string | null => (typeof v === 'string' && v !== '' ? v : null);
+
+/** The name of an effect's source: its parent item, else the document its origin points at. */
+function effectSource(e: any): string | null {
+  if (e.parent && e.parent.documentName === 'Item') return str(e.parent.name);
+  if (typeof e.origin === 'string' && typeof fromUuidSync === 'function') {
+    try {
+      return str(fromUuidSync(e.origin)?.name);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 /** The same object manage-actors export writes (fvtt-mcp-dnd5e src/page/actors/reads.ts). */
 function exportData(actor: any): unknown {
@@ -93,6 +133,21 @@ export function digestOf(actor: any): PcDigest {
         max: num(i.system?.uses?.max),
         quantity: num(i.system?.quantity),
       })),
+    features: items
+      .filter(i => ['feat', 'spell'].includes(i.type) && (num(i.system?.uses?.max) ?? 0) > 0)
+      .map(i => ({
+        name: String(i.name),
+        value: num(i.system?.uses?.value),
+        max: num(i.system?.uses?.max),
+        recovery: str(i.system?.uses?.recovery?.[0]?.period),
+      })),
+    // appliedEffects (v11+) is already net of disabled and suppressed effects.
+    effects: [...(actor.appliedEffects ?? [])].map((e: any) => ({
+      name: String(e.name),
+      from: effectSource(e),
+      temporary: e.isTemporary === true,
+      duration: e.isTemporary === true ? str(e.duration?.label) : null,
+    })),
   };
 }
 

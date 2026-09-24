@@ -35,7 +35,7 @@ writes to Foundry.
 | `build-transcript` | → `transcript.md` (everything, 🤫 for whispers) and `transcript-public.md` (whispers withheld). |
 | `analyze-combat` | Battle Flow's stat stamps → the per-combat report (GM-facing numbers). |
 | `snapshot-party` | The party's sheets → `<snapshots.dir>/<date>/<PC>.json` + the digest facts. |
-| `render-pdf` | The outputs' HTML → PDFs (recap.pdf from recap-print.html), page counts, page-grid previews. |
+| `render-pdf` | The outputs' HTML → PDFs (recap.pdf from recap-print.html), page counts, every page as a JPEG to look at. |
 
 Writes to the world stay with `fvtt-mcp-dnd5e`: the session-diary page (`manage-journals`) and the
 Bestiary (its `bestiary-builder` skill). Illustrations are the artificer's `illustration-builder`
@@ -133,22 +133,25 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
      order, woven into both recap.html and recap-print.html with in-world captions. Nothing goes
      into Foundry until the owner approves it.
    - `combat-stats.md` + `combat-log.html` — the combat report from step 5; template
-     `templates/combat-log.html`. GM-facing: exact numerals wanted.
+     `templates/combat-log.html`. GM-facing: exact numerals wanted. Keep its `.keep` groups (a
+     heading with its first block), as in recap-print.html.
    - `gm-notes.md` + `.html`, or the split pair `gm-notes-story` (plot: what changed in the world,
      what is now canon, promises and their status, open threads, loot with story weight, quotes)
      and `gm-notes-mechanics` (bookkeeping checklist to apply to the live world — levels, items,
      coin, renames; automation that cost time; rulings to keep consistent; table observations).
-     Both from `templates/gm-notes.html`.
-   - PDFs, when `sessions.pdf` — `render-pdf { date }`. **Then look at every page:** serve the
-     `audio/previews/` folder it names on 127.0.0.1 and open each `*.preview.html` in the Browser
-     pane (wait for `<body data-done="1">`). Fix the HTML and render again on a heading alone at a
-     page foot, a picture pushed off its section, a split table or entry, or a near-empty page.
+     Both from `templates/gm-notes.html`, with its `.keep` groups.
+   - PDFs, when `sessions.pdf` — `render-pdf { date }`. **Then look at every page:** it writes
+     each page as `audio/previews/<output>-NN.jpg` and lists them; read every image, in order.
+     Fix the HTML and render again on a heading alone at a page foot, a picture pushed off its
+     section, a split table or entry, or a near-empty page.
 7. **Snapshot the party** — `snapshot-party { date }` writes the full JSON exports (the durable
    record: every charge, effect and attunement; restores via the sheet's **Import Data**). Then
    write `<snapshots.dir>/<date>.md` yourself from the returned digests: per PC, class / subclass
    + LEVEL, HP max, AC, the six ability scores, feats / ASIs, weapon masteries, spell slots,
-   attuned + equipped magic items, and consumables **with their remaining charges / counts** —
-   in the format of the newest earlier snapshot, diffable against it.
+   attuned + equipped magic items, consumables **with their remaining charges / counts**, the
+   feature pools with their remaining uses (`features`: Lay on Hands, Second Wind, superiority
+   dice, Channel Divinity…) and the effects standing on the sheet at the wrap (`effects`) — in
+   the format of the newest earlier snapshot, diffable against it.
 8. **The session-diary page** — when `journals.sessionDiary` is set: append ONE player-visible
    text page to that journal with fvtt-mcp-dnd5e's `manage-journals` (`update` with `newPageName`
    + `playerVisible: true`), named `Session N — <title>`, the date in the body, written from
@@ -183,7 +186,8 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
   direct-labeled; render the page and look at it before shipping. A buff that measured zero
   because of a *suspected* automation fault is not a dud — that goes to the mechanics notes.
 - **The PDFs are what get read away from the desk.** Nothing splits across a page, pages are
-  numbered, and every page is looked at before the files go out (step 6).
+  numbered, and every page is looked at before the files go out (step 6). The templates' `.keep`
+  groups are what Chrome honours; a heading's own `break-after: avoid` is not.
 - **Monsters the party fought go in the Bestiary** — after the recap, hand off to the
   `bestiary-builder` skill for anything newly killed.
 - **Attribution is per-speaker-track and trustworthy** — quote players verbatim when it's good

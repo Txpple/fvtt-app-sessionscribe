@@ -9,7 +9,14 @@
      files may appear in recap.html.
 
      Same CSS family as combat-log.html so the four PDFs read as one set. Fill every
-     {{PLACEHOLDER}}; repeat the marked blocks per section / per row. -->
+     {{PLACEHOLDER}}; repeat the marked blocks per section / per row.
+
+     PRINT: every <h2> (and <h3>) sits inside a `.keep` with its FIRST block — a paragraph, a
+     checklist, a table, a quote — the way recap-print.html does it. Chrome ignores
+     `break-after: avoid` on a heading and `break-inside: avoid` on a whole section; the .keep
+     wrapper (with `display: flow-root`) is what it honours. Everything after the .keep flows.
+     The footer rides inside the document's LAST .keep (with the last quote or the last block),
+     so it never lands alone on a page of its own. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,8 +68,11 @@
   blockquote p{margin:0}
   blockquote .who{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
   footer{padding:14px 32px 22px;border-top:1px solid var(--rule);font-size:12px;color:#9c8f78}
-  /* Print: nothing splits across a page, headings and intro lines travel with what they
-     introduce, pages numbered. Look at every page of the PDF before shipping. */
+  /* Print: nothing splits across a page, headings travel with what they introduce (the .keep
+     groups), pages numbered. Look at every page of the PDF before shipping. */
+  /* flow-root matters: as a plain block the keep is split when the heading fits at the
+     page foot and its block does not (measured on session 8's combat log, 2026-09-24). */
+  .keep{display:flow-root;break-inside:avoid;page-break-inside:avoid}
   @page{margin:0.6in 0.6in 0.7in;
     @bottom-center{content:"Session {{SESSION_NO}} \00B7  GM Notes \00B7  {{STORY_OR_MECHANICS}} \00B7  " counter(page);
       font-family:Georgia,serif;font-size:8pt;color:#9c8f78}}
@@ -95,16 +105,21 @@
 </header>
 
 <section>
+  <div class="keep">
   <p class="lead">{{ONE_PARAGRAPH_WHAT_THIS_DOC_IS_FOR}}</p>
   <!-- Optional: the single thing to act on first. -->
   <div class="callout flag"><p><strong>{{ACT_ON_THIS_FIRST}}</strong> {{WHY}}</p></div>
+  </div>
 </section>
 
 <!-- Repeat per section. Use ul.check for checklists (li.done = ticked), table.data for
-     promises/rulings, blockquote for quotes. -->
+     promises/rulings, blockquote for quotes. The .keep holds the heading and its first block;
+     the rest of the section flows after it. -->
 <section>
+  <div class="keep">
   <h2>{{N}} &middot; {{SECTION_HEADING}}</h2>
   <p>{{SECTION_PROSE_OR_OMIT}}</p>
+  </div>
   <ul class="check">
     <li class="done">{{DONE_ITEM}}</li>
     <li>{{OPEN_ITEM}}</li>
@@ -112,13 +127,18 @@
 </section>
 
 <section>
+  <div class="keep">
   <h2>{{N}} &middot; {{QUOTES_OR_OTHER_HEADING}}</h2>
   <blockquote><p><em>"{{QUOTE}}"</em><span class="who">&mdash; {{WHO_AND_CONTEXT}}</span></blockquote>
+  </div>
+  <!-- more quotes flow here; the LAST one shares a .keep with the footer -->
+  <div class="keep">
+  <blockquote><p><em>"{{LAST_QUOTE}}"</em><span class="who">&mdash; {{WHO_AND_CONTEXT}}</span></blockquote>
+  <footer>
+    GM-only. Compiled from the transcript, the chat log and the live sheets by the session scribe.
+  </footer>
+  </div>
 </section>
-
-<footer>
-  GM-only. Compiled from the transcript, the chat log and the live sheets by the session scribe.
-</footer>
 
 </div>
 </div>

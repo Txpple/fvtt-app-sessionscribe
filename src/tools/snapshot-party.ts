@@ -45,7 +45,7 @@ export class SnapshotPartyTool {
           "Snapshot the campaign's party at a session's wrap: each campaign.json party member's " +
           'full native export (restores via Import Data) to <snapshots.dir>/<date>/<PC>.json, ' +
           'plus the digest facts (level, HP, AC, abilities, feats, masteries, slots, attuned, ' +
-          'charges) to write <date>.md from. Party only.',
+          'charges, feature uses, active effects) to write <date>.md from. Party only.',
         inputSchema: toInputSchema(SnapshotPartySchema),
       },
     ];

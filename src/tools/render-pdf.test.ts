@@ -41,6 +41,7 @@ function setup(files: Record<string, string>, pages = 3, exec?: Exec) {
   const root = makeTempRepo({ 'campaign.json': CAMPAIGN_JSON, 'edge/msedge.exe': '', ...files });
   roots.push(root);
   const calls: string[][] = [];
+  const grabbed: string[] = [];
   const tool = new RenderPdfTool({
     config: loadConfig({
       SCRIBE_CAMPAIGN_REPO: root,
@@ -48,16 +49,25 @@ function setup(files: Record<string, string>, pages = 3, exec?: Exec) {
     }),
     exec: exec ?? fakeEdge(calls, pages),
     pollMs: 1,
+    // a fake rasteriser: one JPEG-shaped buffer per page the fake Edge printed
+    grab: async preview => {
+      grabbed.push(preview);
+      return Array.from({ length: pages }, (_, i) => Buffer.from(`jpeg page ${i + 1}`));
+    },
   });
-  return { root, tool, calls, dir: path.join(root, S) };
+  return { root, tool, calls, grabbed, dir: path.join(root, S) };
 }
 afterEach(() => {
   for (const r of roots.splice(0)) removeTempRepo(r);
 });
 
 describe('render-pdf', () => {
-  it('prints recap.pdf from recap-print.html and the rest from their own HTML, with previews', async () => {
-    const { tool, calls, dir } = setup(HTML, 4);
+  it('prints recap.pdf from recap-print.html and the rest from their own HTML, with page images', async () => {
+    const { tool, calls, grabbed, dir } = setup(HTML, 4);
+    // a stale page from a longer earlier render must not survive
+    const previews = path.join(dir, 'audio', 'previews');
+    fs.mkdirSync(previews, { recursive: true });
+    fs.writeFileSync(path.join(previews, 'recap-05.jpg'), 'stale');
     const out = await tool.handleRenderPdf({ date: '2026-01-06' });
     expect(out.rendered.map(r => [r.output, r.from, r.pages])).toEqual([
       ['recap', 'recap-print.html', 4],
@@ -73,9 +83,31 @@ describe('render-pdf', () => {
       ])
     );
     expect(calls[0]?.at(-1)).toMatch(/^file:\/\/\/.*recap-print\.html$/);
-    const preview = path.join(dir, 'audio', 'previews', 'recap.preview.html');
-    expect(out.rendered[0]?.preview).toBe(preview);
+    const preview = path.join(previews, 'recap.preview.html');
+    expect(grabbed[0]).toBe(preview);
     expect(fs.readFileSync(preview, 'utf8')).toContain('pdfjsLib.getDocument');
+    expect(out.rendered[0]?.images).toEqual(
+      [1, 2, 3, 4].map(n => path.join(previews, `recap-0${n}.jpg`))
+    );
+    expect(fs.readFileSync(path.join(previews, 'recap-03.jpg'), 'utf8')).toBe('jpeg page 3');
+    expect(fs.existsSync(path.join(previews, 'recap-05.jpg'))).toBe(false);
+    expect(out.look).toMatch(/read every page image/);
+  });
+
+  it('refuses page images that do not match the page count', async () => {
+    const { root } = setup(HTML, 3);
+    const tool = new RenderPdfTool({
+      config: loadConfig({
+        SCRIBE_CAMPAIGN_REPO: root,
+        SCRIBE_EDGE: path.join(root, 'edge', 'msedge.exe'),
+      }),
+      exec: fakeEdge([], 3),
+      pollMs: 1,
+      grab: async () => [Buffer.from('only one')],
+    });
+    await expect(
+      tool.handleRenderPdf({ date: '2026-01-06', outputs: ['combat-log'] })
+    ).rejects.toThrow(/3 pages but the preview drew 1/);
   });
 
   it('prints a chosen subset without previews', async () => {
@@ -86,7 +118,7 @@ describe('render-pdf', () => {
       preview: false,
     });
     expect(out.rendered).toHaveLength(1);
-    expect(out.rendered[0]).not.toHaveProperty('preview');
+    expect(out.rendered[0]).not.toHaveProperty('images');
     expect(calls).toHaveLength(1);
     expect(out).not.toHaveProperty('look');
   });

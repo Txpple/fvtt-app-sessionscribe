@@ -12,13 +12,14 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
   - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.
-- **The offline gate** is green: 126 tests.
+- **The offline gate** is green: 127 tests.
 - **Proven for real:**
   - `build-transcript`: parity with the Python `align` on all 9 real sessions; the only
     differences are 77 whisper fixes.
   - `fetch-recording`: the zip path on the real 2026-09-22 zip.
   - `transcribe-recording`: on CUDA through the job path, resume included.
-  - `render-pdf`: 2026-09-22's four PDFs match the committed page counts and sizes.
+  - `render-pdf`: 2026-09-22's four PDFs match the committed page counts and sizes; the page
+    images, on the replay's combat log and story notes (2026-09-24).
 - **Proven live on the sandbox (2026-09-23 evening; Foundry 14.368, dnd5e 6.0.5, Battle Flow
   2.0.5; the scribe was the only GM connected, so it was the elected GM):**
   - `verify-reader`: 4/4. No user is left connected, and nothing is modified during the join or
@@ -97,27 +98,39 @@ What it proved:
   - progress inside a transcription track.
 - Documented: the first-join Dice So Nice write.
 
-## 1 · Before session 9: the open issues, in order
+## Landed: the five pre-session-9 items (2026-09-24, owner's go-ahead on all)
 
-Each needs the owner's go-ahead. #1 and #2 change the running server, which needs a restart.
+1. **`render-pdf` writes page images.** Each PDF's pdf.js preview is opened by headless
+   Chromium (`fvtt-mcp-dnd5e`'s Playwright, resolved through that package) and every canvas is
+   saved as `audio/previews/<output>-NN.jpg`; the tool lists them and refuses a count that
+   differs from the PDF's pages. Skill step 6 reads the images. Measured on the replay: 7 + 5
+   pages printed and rasterised in 3.7 s.
+2. **"traits denied" is arithmetic now.** Battle Flow labels `traits[]` from dnd5e's per-part
+   `active.multiplier`, which already has the save's halving folded in, so on a halved save
+   "saved, no resistance" is labelled resistant and "saved and resistant" (× 0.25) gets no label
+   (session 8: Gren 32 → 8 unlabelled, Morgash 32 → 16 "resistant", both fireballs on the
+   dragon "resistant"). The meter is now roll × the entry's save multiplier − the part, label
+   ignored. On the real scan the dragon fight reads Gren 15, Morgash 8, Invictus 38, Jetten 16:
+   the by-hand count exactly. **Cross-repo, the owner's call:** Battle Flow's
+   `decide/receipt.js` `traitOutcome` could divide the caller's multiplier out before reading
+   the outcome; until then its receipt rows say "resistant" on any halved save.
+3. **Templates: `.keep` groups in combat-log and gm-notes**, heading + first block, as in
+   recap-print. Measured on the real combat log: a plain-block keep is still split when the
+   heading fits at the page foot and its block does not (2 of 11 pixel offsets); with
+   `display: flow-root` it held at every offset. All three templates' keeps are flow-root now.
+4. **`snapshot-party` digests carry `features`** (feat and spell items with limited uses:
+   name, remaining, max, recovery period) **and `effects`** (what `appliedEffects` holds:
+   name, source, temporary, remaining duration). Skill step 7 lists them.
+5. **`scripts/call.mjs <tool> '<json>'`** drives one tool through a fresh `dist/index.js`;
+   the environment (`SCRIBE_CAMPAIGN_REPO`, `FOUNDRY_HOST`) reaches it.
 
-1. **`render-pdf` writes page images.** The look step used a local server and the Browser pane.
-   A hidden pane stalls pdf.js and screenshots time out. Headless Chromium from
-   `fvtt-mcp-dnd5e`'s Playwright opens `audio/previews/*.preview.html` from `file://` and exports
-   every canvas as a JPEG in seconds (worked from a scratch script). Emit
-   `audio/previews/<output>-NN.jpg`, then point skill step 6 at them.
-2. **"traits denied" in `analyze-combat`.** A by-hand count from the rolls disagrees for the
-   dragon: Gren 7 vs 15, Morgash 16 vs 8 (Invictus 38 and Jetten 16 agree). Save halves and
-   resistance look mixed in some stamps (`src/analytics/combat.ts`, the parts-vs-rolls diff).
-   Pull the raw stamps for the two breath applications first.
-3. **Templates: the combat-log and GM-notes break rules.** Chrome ignored `break-after: avoid` on
-   `h2` and `break-inside: avoid` on a `section`, so "6 · Combat flow" sat alone at a page
-   foot. It was fixed in that PDF with `break-before: page`. Give both templates the recap-print
-   `.keep` pattern (a heading glued to its first block), then re-check a long combat log.
-4. **`snapshot-party` digests: feature pools and active effects** (Lay on Hands, Second Wind,
-   superiority dice, Channel Divinity). The house snapshot wants "remaining charges / uses".
-5. **A replay driver in the repo** (`scripts/call.mjs <tool> <json>`), so replays don't need a
-   hand-written driver.
+**Needs the owner's restart of the `scribe` server:** items 1, 2 and 4 changed `dist/`.
+
+## 1 · Before session 9: what is left
+
+- The restart above.
+- Battle Flow's trait label (item 2), if the owner wants the receipt rows right as well as the
+  scribe's meter.
 
 ## 2 · Session 9 (the finale)
 
@@ -129,7 +142,10 @@ live sheets before writing: the replay's first draft said two hearts, and the pa
 - **Whisper isn't deterministic run to run.** The same audio, model, library and machine gave
   1676 vs 1185 DM segments with equivalent words (temperature fallback). Compare content, not
   segment counts.
-- **The Browser pane stalls pdf.js when it is hidden.** Use headless Playwright instead.
+- **The Browser pane stalls pdf.js when it is hidden.** render-pdf writes page images instead.
+- **Chromium's print splits a plain-block `.keep`** when the heading fits at the page foot and
+  its block does not; `display: flow-root` on the keep is what holds. And when measuring
+  breaks, an inserted empty `<section>` moves the layout by its padding: nudge with a margin.
 - **Every Flash render needs the flaw pass.** In the replay it caught a second sword, a second maul
   head, five dirt wedges for four, and a whole heart drawn for a quarter.
 

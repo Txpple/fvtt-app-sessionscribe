@@ -22,7 +22,7 @@ that repo's 3.0 decisions #16 and #17). All eight tools and the skill have lande
   - fetch-recording: the real 2026-09-22 zip, and the **Craig link** (2026-09-24, session 8
     replayed end to end on prod into a scratch clone).
   - transcribe-recording: on CUDA, resume included.
-  - render-pdf: 2026-09-22's four PDFs.
+  - render-pdf: 2026-09-22's four PDFs, and their page images (2026-09-24).
 - **Proven live on the sandbox, as Scribe Assistant:**
   - the reader's gate `scripts/verify-reader.mjs`;
   - parity with the MCP for analyze-combat, export-session-chat and snapshot-party.
@@ -38,6 +38,7 @@ npm run build               # tsc → dist/, then esbuild.page.mjs → dist/page
 npm test                    # vitest, offline (src/**/*.test.ts)
 npx vitest run src/transcript/align.test.ts   # one file; add -t "<name>" for one test
 npm run check && npm run typecheck && npm test && npm run build && npm run knip   # the gate
+node scripts/call.mjs <tool> '<json>'   # one tool through a fresh dist/index.js; SCRIBE_CAMPAIGN_REPO / FOUNDRY_HOST in the env reach it
 FOUNDRY_HOST=local node scripts/verify-reader.mjs   # sandbox only: the reader leaves no trace
 FOUNDRY_HOST=local node scripts/parity-chat.mjs     # sandbox only: vs the MCP's export-chat-log (also parity-snapshot)
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # transcription venv
@@ -93,7 +94,12 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   `ARCHITECTURE.md` §4.
 - `src/transcript/align.ts` is the retired `session_scribe.py align`, line for line, plus the
   whisper fix and `transcript-public.md`.
-- `src/pdf.ts` prints with headless Edge.
+- `src/pdf.ts` prints with headless Edge, then rasterises every page as a JPEG: a pdf.js preview
+  page opened by headless Chromium (`fvtt-mcp-dnd5e`'s Playwright, resolved through that
+  package), under `audio/previews/<output>-NN.jpg`. The Browser pane is not used for the look.
+- The trait meter ("traits denied") is arithmetic: the message's roll × the entry's save
+  multiplier − the post-trait part. Battle Flow's `traits[]` label is not consulted (it misreads
+  dnd5e's combined multiplier on a halved save).
 
 **The skill:** `.claude/skills/session-scribe/`, with its templates. It is junctioned to
 `~/.claude/skills/session-scribe`, so it loads in any project.
@@ -131,7 +137,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point
   `SCRIBE_CAMPAIGN_REPO` at it), never the real one.
   - The running `scribe` server can't be re-pointed without a restart. Instead, drive a fresh
-    `dist/index.js` over stdio with that env; `dotenv` does not override a set variable.
+    `dist/index.js` over stdio with that env: `scripts/call.mjs <tool> '<json>'`; `dotenv` does
+    not override a set variable.
   - A replay reads prod exactly as a real session does, and writes nothing to the world.
 - **A user's first join to a world runs modules' first-run writes.** Dice So Nice whispers a
   welcome and sets a user flag. Scribe Assistant's first prod join did this (2026-09-24 01:19Z).
@@ -152,6 +159,9 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - **msedge.exe is a launcher:** it exits in about 50 ms and a child process writes the PDF
   seconds later. `src/pdf.ts` waits for the file to settle. A PDF of about 1 KB means the page
   did not load.
+- **Chromium's print honours a `.keep` wrapper only as its own formatting context**
+  (`display: flow-root`): a plain-block keep is split when the heading fits at the page foot and
+  its first block does not. `break-after: avoid` on a heading is ignored outright.
 - **Windows Application Control can block the uv-managed Python's DLLs** (an `_ctypes`
   ImportError). The fix is a venv on a signed python.org install. Never touch the policy itself.
 - **ctranslate2 needs the pip-installed NVIDIA `bin` directories on `PATH`;**

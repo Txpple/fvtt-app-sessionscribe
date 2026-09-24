@@ -21,6 +21,14 @@
         transcript. Names come off the wire; a raw uuid in the report is a bug for the mechanics
         notes, not something to paper over.
      8. No table/tech/meta talk — that belongs in gm-notes.md and the bug list.
+     9. PRINT: every <h2> and <h3> sits inside a `.keep` with its FIRST block (the lead
+        paragraph, the figure, or a short table), the way recap-print.html does it. Chrome
+        ignores `break-after: avoid` on a heading and `break-inside: avoid` on a whole section
+        (session 8: "6 · Combat flow" sat alone at a page foot); a `.keep` wrapper with
+        `display: flow-root` is what it honours. Everything after the .keep flows. The footer
+        rides inside the document's LAST .keep, so it never lands alone on a page of its own. A
+        section that must open a page can still take `style="break-before:page"`, as a last
+        resort after looking at the pages.
 
      Fill every {{PLACEHOLDER}}. Repeat the marked blocks per PC / per fight / per effect. -->
 <!DOCTYPE html>
@@ -94,8 +102,11 @@
   li{margin-bottom:5px}
   footer{padding:14px 32px 22px;border-top:1px solid var(--rule);
     font-size:12px;color:#9c8f78}
-  /* Print: nothing splits across a page, headings and intro lines travel with what they
-     introduce, pages numbered. Look at every page of the PDF before shipping. */
+  /* Print: nothing splits across a page, headings travel with what they introduce (the .keep
+     groups — rule 9), pages numbered. Look at every page of the PDF before shipping. */
+  /* flow-root matters: as a plain block the keep is split when the heading fits at the
+     page foot and its block does not (measured on session 8's combat log, 2026-09-24). */
+  .keep{display:flow-root;break-inside:avoid;page-break-inside:avoid}
   @page{margin:0.6in 0.6in 0.7in;
     @bottom-center{content:"Session {{SESSION_NO}} \00B7  Combat Log \00B7  " counter(page);
       font-family:Georgia,serif;font-size:8pt;color:#9c8f78}}
@@ -128,15 +139,18 @@
 </header>
 
 <section>
+  <div class="keep">
   <p class="lead">{{ONE_PARAGRAPH_SHAPE_OF_THE_NIGHT}}</p>
 
   <!-- Rule 1: the single headline fact, in numbers. -->
   <div class="callout flag">
     <p><strong>{{HEADLINE_CLAIM}}</strong> {{HEADLINE_EVIDENCE}}</p>
   </div>
+  </div>
 </section>
 
 <section>
+  <div class="keep">
   <h2>1 &middot; Headline numbers</h2>
 
   <!-- Repeat per magnitude comparison. Widest bar = 100%; others scale off it. -->
@@ -147,6 +161,7 @@
     </div>
     <p class="figure-note">{{WHAT_THE_SHAPE_MEANS}}</p>
   </figure>
+  </div>
 
   <div class="scroll">
   <table class="data">
@@ -163,8 +178,10 @@
 
 <!-- Repeat one section per combat / per scene. Rule 4 column set. -->
 <section>
+  <div class="keep">
   <h2>{{N}} &middot; {{FIGHT_NAME}} &mdash; {{SCENE}}, {{ROUNDS}} rounds</h2>
   <p>{{WHAT_DECIDED_THIS_FIGHT}}</p>
+  </div>
 
   <div class="scroll">
   <table class="data">
@@ -186,10 +203,13 @@
 
 <!-- Rule 5: REQUIRED SECTION. -->
 <section>
+  <div class="keep">
   <h2>{{N}} &middot; What the buffs and features actually bought</h2>
   <p>Every spell, maneuver and mastery that touched a number this session, and what it produced.
   Ranked by how much it moved the fight.</p>
+  </div>
 
+  <div class="keep">
   <h3>The big three</h3>
   <figure>
     <figcaption>Damage prevented or added, by effect</figcaption>
@@ -197,10 +217,12 @@
       <div class="row"><span class="name">{{EFFECT}}</span><span class="track"><span class="fill" style="width:{{PCT}}%"></span></span><span class="val">{{N}} {{prevented|added}}</span></div>
     </div>
   </figure>
+  </div>
   <ul>
     <li><strong>{{EFFECT_AND_ITS_VERDICT}}</strong> {{THE_ARITHMETIC_BEHIND_IT}}</li>
   </ul>
 
+  <div class="keep">
   <h3>Maneuvers and masteries</h3>
   <div class="scroll">
   <table class="data">
@@ -210,7 +232,9 @@
     </tbody>
   </table>
   </div>
+  </div>
 
+  <div class="keep">
   <h3>Buffs, and what they were worth</h3>
   <div class="scroll">
   <table class="data">
@@ -221,12 +245,17 @@
     </tbody>
   </table>
   </div>
+  </div>
 
+  <div class="keep">
   <h3>Healing that mattered</h3>
   <p>{{RAISES_FROM_ZERO_AND_WHAT_THE_REST_RECOVERED}}</p>
+  </div>
 </section>
 
 <section>
+  <!-- A short table straight after the heading rides in the .keep with it. -->
+  <div class="keep">
   <h2>{{N}} &middot; Combat flow &mdash; decision speed</h2>
   <p>The timing stamps, averaged per player across timed decision moments.</p>
   <div class="scroll">
@@ -239,13 +268,17 @@
     </tbody>
   </table>
   </div>
+  </div>
   <p>{{WHAT_THE_TIMINGS_SAY_ABOUT_ENGAGEMENT}}</p>
 </section>
 
 <section>
+  <div class="keep">
   <h2>{{N}} &middot; Economy and flavour</h2>
   <h3>Resources spent</h3>
   <ul><li><strong>{{PC}}</strong> &mdash; {{POOLS_AND_SLOTS_LEFT}}</li></ul>
+  </div>
+  <div class="keep">
   <h3>The night's dice</h3>
   <ul>
     <li><strong>Buff-die flips:</strong> {{BLESS_FLIPS}}</li>
@@ -254,12 +287,13 @@
     <li><strong>Advantage rolled:</strong> {{LIST}} &mdash; disadvantage: {{LIST}}</li>
     <li><strong>Death saves:</strong> {{LIST}}</li>
   </ul>
+  <!-- The footer stays inside the last .keep (rule 9). -->
+  <footer>
+    Generated from the Battle Flow ledger via <code>analyze-combat</code> &mdash; read-only scan,
+    reverted applications subtracted. Monster token identifiers resolved to names by hand.
+  </footer>
+  </div>
 </section>
-
-<footer>
-  Generated from the Battle Flow ledger via <code>analyze-combat</code> &mdash; read-only scan,
-  reverted applications subtracted. Monster token identifiers resolved to names by hand.
-</footer>
 
 </div>
 </div>

@@ -245,13 +245,15 @@ function fixtureScan() {
       {
         id: 'm10',
         ts: 10,
-        // second-pass fields: parts vs the message's own pre-mitigation rolls. The entry's
-        // multiplier annotates the SAME halving the parts carry (measured live) — the meter
-        // must not apply it twice: resist necrotic roll 9 → part 4.5 → denied 4.5, and the
-        // fire part (no matching trait) contributes only to by-type, never the trait meter.
+        // second-pass fields: parts vs the message's own pre-mitigation rolls, on a hit the
+        // targets SAVED against (multiplier 0.5, Battle Flow's save halving). The expected part
+        // without traits is roll × multiplier; what is missing beyond that is the traits' share.
+        // The entry's traits[] label is ignored: dnd5e folds the save into the per-part
+        // multiplier Battle Flow labels from, so Aldric (saved AND resistant, necrotic 9 → 2.25)
+        // arrives unlabelled and Cass (saved only, 9 → 4.5) arrives labelled "resistant".
         rolls: [
           { total: 9, type: 'necrotic' },
-          { total: 3, type: 'fire' },
+          { total: 4, type: 'fire' },
         ],
         flags: {
           receipt: {
@@ -260,13 +262,29 @@ function fixtureScan() {
                 uuid: 'Actor.A',
                 name: 'Aldric',
                 prior: { value: 20, temp: 0 },
-                delta: { value: -7, temp: 0 },
-                taken: 7,
+                delta: { value: -4, temp: 0 },
+                taken: 4.25,
+                multiplier: 0.5,
+                traits: [],
+                parts: [
+                  { type: 'necrotic', amount: 2.25 },
+                  { type: 'fire', amount: 2 },
+                ],
+                reverted: false,
+                combat: 'C1:3:3',
+                sourceUuid: SYNTH('t1', 'g1'),
+              },
+              {
+                uuid: 'Actor.C',
+                name: 'Cass',
+                prior: { value: 20, temp: 0 },
+                delta: { value: -6, temp: 0 },
+                taken: 6.5,
                 multiplier: 0.5,
                 traits: [{ type: 'necrotic', outcome: 'resistant' }],
                 parts: [
                   { type: 'necrotic', amount: 4.5 },
-                  { type: 'fire', amount: 3 },
+                  { type: 'fire', amount: 2 },
                 ],
                 reverted: false,
                 combat: 'C1:3:3',
@@ -461,13 +479,17 @@ describe('foldCombatLedger', () => {
     expect(actors['archetype:Goblin'].targeted).toBe(1);
   });
 
-  it('measures the trait meter type-matched and WITHOUT double-applying multiplier', () => {
-    // resist necrotic: roll 9 → part 4.5 (multiplier 0.5 annotates the same halving)
-    expect(actors['Actor.A'].mitigated).toBe(4.5);
+  it('measures the trait meter from the arithmetic, net of the save multiplier, never the label', () => {
+    // saved and resistant: necrotic 9 × 0.5 = 4.5 expected, part 2.25 → the traits denied 2.25;
+    // fire 4 × 0.5 = 2 expected, part 2 → nothing denied
+    expect(actors['Actor.A'].mitigated).toBe(2.25);
     expect(actors['Actor.A'].amplified).toBe(0);
-    // fire has no matching trait — by-type only, never the trait meter
+    // saved only, mislabelled resistant: 9 × 0.5 = 4.5 expected, part 4.5 → nothing denied
+    expect(actors['Actor.C'].mitigated).toBe(0);
+    expect(actors['Actor.C'].amplified).toBe(0);
+    // by-type stays the post-trait parts, summed over both targets
     const goblin = actors['archetype:Goblin'];
-    expect(goblin.damageByType).toEqual({ necrotic: 4.5, fire: 3 });
+    expect(goblin.damageByType).toEqual({ necrotic: 6.75, fire: 4 });
   });
 
   it('counts save outcomes roller-side from saves targets and concentration outcomes', () => {
