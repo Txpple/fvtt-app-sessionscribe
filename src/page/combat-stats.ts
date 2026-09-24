@@ -11,16 +11,23 @@
 //     archetype identity Node-side.
 //   • the fold (src/analytics/combat.ts) subtracts `reverted` — ruling R-B.
 //
-// Ported verbatim from fvtt-mcp-dnd5e's src/page/combat-stats.ts; the one addition is `until`.
-// This is the only copy since that repo's 4.0.0 retired get-combat-stats.
+// Ported verbatim from fvtt-mcp-dnd5e's src/page/combat-stats.ts, adding `until`. This is the
+// only copy since that repo's 4.0.0 retired get-combat-stats, and it has since grown the
+// 2026-09-01 and 2026-09-05 families (see BF_KEYS).
 //
 // READ-ONLY by design: no writes, no settings, no fixtures — safe beside a live session.
 // The scan returns raw JSON; all folding happens Node-side so it is unit-testable.
 
 const BF_MOD = 'fvtt-mod-battleflow';
-// Families folded from `stamped`. rollCtx and combatRoster are deliberately NOT here:
-// rollCtx rides the d20 entries (its message IS the roll), combatRoster feeds `rosters`.
-const BF_KEYS = [
+// Families folded from `stamped`: the contract table's stamped flags. rollCtx and combatRoster
+// are deliberately NOT here: rollCtx rides the d20 entries (its message IS the roll), and
+// combatRoster feeds `rosters`.
+// Also left out:
+//   • castApply: the table lists `castApply.choice`, but that choice carries no stamp (no
+//     `combat`, no `sourceUuid`; Battle Flow polish.js castChoice). Reading it would count every
+//     cast card as a legacy record.
+//   • emanationCard and clockRiders: stamped, but not in the table yet. Read them once they are.
+export const BF_KEYS = [
   'receipt',
   'effectReceipt',
   'd20fold',
@@ -35,6 +42,19 @@ const BF_KEYS = [
   'volley',
   'concentration',
   'spend',
+  // 2026-09-01: the gate's reminders and the chips an attack used up (on the attack message)
+  'reminder',
+  'chipSpend',
+  // 2026-09-05: wards, maneuvers, bare damage casts, emanations
+  'damageShield',
+  'shieldMark',
+  'superiorityUse',
+  'superiorityRide',
+  'baitSwitch',
+  'command',
+  'damageCast',
+  'emanationHeal',
+  'emanationRemind',
 ];
 const D20_TYPES = new Set(['attack', 'save', 'ability', 'skill', 'tool', 'concentration', 'death']);
 

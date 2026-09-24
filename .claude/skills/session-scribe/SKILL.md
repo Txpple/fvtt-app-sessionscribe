@@ -99,7 +99,14 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    speech time with the roll's; past ~5 s, set `sessions.skewSeconds` in `campaign.json` and
    rebuild.
 5. **Combat** — `analyze-combat { date }` (a world without Battle Flow says so in the first line:
-   skip the combat log then). `includeLedger: true` when you need to trace a number.
+   skip the combat log then). `includeLedger: true` when you need to trace a number. Each actor's
+   moments also carry:
+   - the gate's reminders, on attacks and on saves: the net it named, rolls made against it,
+     attack hits and saves made when reminded;
+   - the chips each swing used up;
+   - damage-shield strikes. Their damage is already in `dealt`, so don't add it twice.
+
+   These feed "what the buffs and features actually bought".
 6. **Write the artifacts** (your judgment — read BOTH transcripts fully first). The set is
    `sessions.outputs`; each is a `.md` and, where a template exists, an `.html` (templates are in
    this skill's `templates/`):

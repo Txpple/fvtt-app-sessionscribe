@@ -6,7 +6,38 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { messageItemUuid, messageOrigin, messageRollType, messageTargets } from './combat-stats.js';
+import {
+  BF_KEYS,
+  messageItemUuid,
+  messageOrigin,
+  messageRollType,
+  messageTargets,
+} from './combat-stats.js';
+
+describe('BF_KEYS (the families the scan folds)', () => {
+  it("covers the contract table's stamped families, 2026-09-01 and 2026-09-05 included", () => {
+    for (const k of [
+      'receipt',
+      'spend',
+      'reminder',
+      'chipSpend',
+      'damageShield',
+      'shieldMark',
+      'superiorityUse',
+      'superiorityRide',
+      'baitSwitch',
+      'command',
+      'damageCast',
+      'emanationHeal',
+      'emanationRemind',
+    ])
+      expect(BF_KEYS).toContain(k);
+  });
+
+  it('leaves out castApply (its choice is unstamped) and the rollCtx / combatRoster riders', () => {
+    for (const k of ['castApply', 'rollCtx', 'combatRoster']) expect(BF_KEYS).not.toContain(k);
+  });
+});
 
 describe('messageRollType', () => {
   it('maps dnd5e 6.0 typed messages to the 5.x roll vocabulary', () => {

@@ -59,17 +59,20 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   `fvtt-mod-partystash`. The Battle Flow session announces a hold by cross-session message; wait
   for its all-clear.
 
-## 1 · Battle Flow's newer stamp families (optional, owner rules on it)
+## Landed: Battle Flow's newer stamp families (2026-09-23 evening)
 
-The scan's key list (`src/page/combat-stats.ts`) predates `chipSpend`, `reminder` and
-`damageShield(s)` (Battle Flow `ARCHITECTURE.md` §4, the stamped-families table).
-- **Why now:** parity is done and the MCP copy is gone, so the scan is free to evolve.
-- **Effect:** adding them changes what counts as "stamped".
-- **How:** synthetic tests; then show the owner a report before and after on a real session
-  window.
-- When it lands, drop "(not read there yet)" from Battle Flow's `reminder` row.
+The scan reads the contract table's 2026-09-01 and 2026-09-05 families: `reminder`,
+`chipSpend`, `damageShield` and the maneuver / cast / emanation moments. On the 2026-09-22
+window, stamped messages went 166 → 193, every existing number was unchanged, and the report
+gained 32 reminders, 4 chips and 4 ward strikes. The owner saw the before and after.
 
-## 2 · The first real session through the scribe
+**Contract drift found, for the owner or the Battle Flow session to rule on:**
+- `castApply.choice` is in the table but carries no stamp.
+- `emanationCard` and `clockRiders` are stamped but missing from the table.
+- `reminder` is stamped on saves and concentration checks as well as attacks; the table says
+  attacks.
+
+## 1 · The first real session through the scribe
 
 When the owner pastes the next Craig link, run the skill end to end.
 

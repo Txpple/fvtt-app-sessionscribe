@@ -43,7 +43,8 @@ export class AnalyzeCombatTool {
         name: 'analyze-combat',
         description:
           "A session's combat analytics from Battle Flow's stat-stamped chat messages: per combat " +
-          'damage dealt / taken, accuracy, healing, verdict flips, spends, Bless margins, flavor ' +
+          'damage dealt / taken, accuracy, healing, verdict flips, spends, moments (reminders, ' +
+          'chips, wards, maneuvers), Bless margins, flavor ' +
           '(nat 20s / 1s, advantage, death saves, decision speed). Reverted applications are ' +
           'subtracted; unlinked monsters aggregate by archetype. GM-facing, exact numbers.',
         inputSchema: toInputSchema(AnalyzeCombatSchema),

@@ -1,6 +1,8 @@
 /**
  * The combat analytics behind analyze-combat, ported VERBATIM from fvtt-mcp-dnd5e's
- * src/tools/combat-stats.ts (get-combat-stats, retired there by the 2026-09-23 break-out).
+ * src/tools/combat-stats.ts (get-combat-stats, retired there by the 2026-09-23 break-out), and
+ * grown here since: the 2026-09-01 / 2026-09-05 families (the gate's reminders, chips spent,
+ * damage shields, the maneuver / cast / emanation moments).
  * Fold Battle Flow's stat-stamped chat messages into a per-combat ledger and render the
  * reports: damage dealt/taken, healing + overheal, verdict-flip credits, spend economy (pools
  * AND slots), buff-die (Bless) margins, and session flavor (nat 20s/1s, advantage economy,
@@ -60,6 +62,23 @@ export interface ActorAgg {
   /** damage this actor's traits denied (resist/immune) or invited (vulnerable), vs the roll */
   mitigated: number;
   amplified: number;
+  /** the gate's reminders on this actor's rolls (attacks, and saves / concentration checks): how
+   *  many, the net they named, how many rolls went out the way the net said (honoured), the hits
+   *  among the reminded attacks, and the saves made among the reminded saves with a known outcome */
+  reminded: number;
+  remindedHonoured: number;
+  remindedNet: Record<string, number>;
+  remindedAttacks: number;
+  remindedHits: number;
+  remindedSaves: number;
+  remindedSavesJudged: number;
+  remindedSavesMade: number;
+  /** chips this attacker's swings used up (Sapped, Vexed …), by name */
+  chips: Record<string, number>;
+  chipsNotHonoured: number;
+  /** this defender's damage shields that struck back. The damage itself is already in `dealt`
+   *  (the ward's own receipt), so this only counts the strikes. */
+  wards: Record<string, { n: number; total: number }>;
 }
 
 export interface CombatLedger {
@@ -110,9 +129,17 @@ export function foldCombatLedger(scan: any): CombatLedger {
   };
   for (const r of Object.values<any>(scan.rosters ?? {}))
     for (const c of r?.combatants ?? []) learn(c?.actorUuid, c?.name);
-  for (const m of scan.stamped ?? [])
+  for (const m of scan.stamped ?? []) {
     for (const f of Object.values<any>(m.flags ?? {}))
       for (const t of f?.targets ?? []) learn(t?.uuid, t?.name);
+    // The 2026-09 families name their actors outside `targets`.
+    const F = m.flags ?? {};
+    for (const s of F.chipSpend?.spent ?? []) learn(s?.uuid, s?.bearer);
+    learn(F.damageShield?.attackerUuid, F.damageShield?.attackerName);
+    learn(F.damageShield?.sourceUuid, F.damageShield?.defenderName);
+    learn(F.command?.attackerUuid, F.command?.attackerName);
+    learn(F.command?.ally?.uuid, F.command?.ally?.name);
+  }
   const name = (u: string | null | undefined) =>
     scan.names?.[u ?? ''] ?? wireNames[u ?? ''] ?? u ?? '(unattributed)';
   // Synthetic token actors (Scene…Token…Actor…) aggregate by NAME — the contract's own
@@ -123,6 +150,8 @@ export function foldCombatLedger(scan: any): CombatLedger {
   };
   const combats: CombatLedger['combats'] = {};
   const tokenSets = new Map<ActorAgg, Set<string>>();
+  // Rolls the gate reminded: the reminder rides the roll's own message (the d20 entry)
+  const remindedIds = new Set<string>();
   let legacy = 0;
 
   const at = (bucket: string, uuid: string | null | undefined): ActorAgg => {
@@ -156,6 +185,17 @@ export function foldCombatLedger(scan: any): CombatLedger {
         damageByType: {},
         mitigated: 0,
         amplified: 0,
+        reminded: 0,
+        remindedHonoured: 0,
+        remindedNet: {},
+        remindedAttacks: 0,
+        remindedHits: 0,
+        remindedSaves: 0,
+        remindedSavesJudged: 0,
+        remindedSavesMade: 0,
+        chips: {},
+        chipsNotHonoured: 0,
+        wards: {},
       };
       tokenSets.set(a, new Set());
     }
@@ -287,6 +327,16 @@ export function foldCombatLedger(scan: any): CombatLedger {
       'holdSkipped',
       'volley',
       'concentration',
+      // 2026-09-05, one per use: maneuvers, a ward raised, a bare damage cast, an emanation's
+      // heal (its healing is already in the receipt) or its turn reminder
+      'superiorityUse',
+      'superiorityRide',
+      'baitSwitch',
+      'command',
+      'shieldMark',
+      'damageCast',
+      'emanationHeal',
+      'emanationRemind',
     ]) {
       if (!F[k]) continue;
       const b = bucketOf(F[k]);
@@ -296,7 +346,56 @@ export function foldCombatLedger(scan: any): CombatLedger {
       }
       bump(b.key!, b.round);
       const a = at(b.key!, F[k].sourceUuid);
-      a.moments[k] = (a.moments[k] ?? 0) + 1;
+      // A ride is one record per damage roll, with one entry per superiority die that rode it.
+      const n = k === 'superiorityRide' ? Math.max(1, F[k].rode?.length ?? 0) : 1;
+      a.moments[k] = (a.moments[k] ?? 0) + n;
+    }
+
+    // The gate's reminder, stamped on the roll it met: an attack, or a save / concentration check
+    // (the contract table says attacks only; the live log has both). It records the net it named
+    // (advantage / disadvantage / normal) and whether the roll went out that way.
+    if (F.reminder) {
+      const b = bucketOf(F.reminder);
+      if (b.legacy) legacy++;
+      else {
+        bump(b.key!, b.round);
+        const a = at(b.key!, F.reminder.sourceUuid);
+        a.reminded++;
+        if (F.reminder.honoured) a.remindedHonoured++;
+        const net = F.reminder.net ?? 'normal';
+        a.remindedNet[net] = (a.remindedNet[net] ?? 0) + 1;
+        remindedIds.add(m.id);
+      }
+    }
+
+    // Chips an attack used up. `honoured` says whether the roll carried the chip's bend.
+    if (F.chipSpend) {
+      const b = bucketOf(F.chipSpend);
+      if (b.legacy) legacy++;
+      else {
+        bump(b.key!, b.round);
+        const a = at(b.key!, F.chipSpend.sourceUuid);
+        for (const s of F.chipSpend.spent ?? []) {
+          const chip = s?.name ?? s?.key ?? 'chip';
+          a.chips[chip] = (a.chips[chip] ?? 0) + 1;
+          if (s?.honoured === false) a.chipsNotHonoured++;
+        }
+      }
+    }
+
+    // A damage shield striking back, credited to the defender. Only a rolled strike counts:
+    // `rolled: false` is the card saying the dice could not be read, and no damage followed.
+    if (F.damageShield?.rolled) {
+      const b = bucketOf(F.damageShield);
+      if (b.legacy) legacy++;
+      else {
+        bump(b.key!, b.round);
+        const a = at(b.key!, F.damageShield.sourceUuid);
+        const ward = F.damageShield.key ?? F.damageShield.effectName ?? 'ward';
+        a.wards[ward] ??= { n: 0, total: 0 };
+        a.wards[ward].n++;
+        a.wards[ward].total += Number(F.damageShield.total) || 0;
+      }
     }
 
     // Save outcomes, roller-side: the saves flag's per-target outcomes and the concentration
@@ -366,8 +465,15 @@ export function foldCombatLedger(scan: any): CombatLedger {
     { dc: number; kind: string; label: string; nearMatched?: boolean }
   >();
   const concDemands: Array<{ ts: number; actorUuid: string; dc: number; label: string }> = [];
+  // A save's outcome by the id of the roll that answered it (saved / kept = true)
+  const saveOutcomeByRoll = new Map<string, boolean>();
   for (const m of scan.stamped ?? []) {
     const c = m.flags?.concentration;
+    if (c?.outcome?.rollMessageId && typeof c.outcome.success === 'boolean')
+      saveOutcomeByRoll.set(c.outcome.rollMessageId, c.outcome.success);
+    for (const t of m.flags?.saves?.targets ?? [])
+      if (t?.rollMessageId && (t.outcome === 'saved' || t.outcome === 'failed'))
+        saveOutcomeByRoll.set(t.rollMessageId, t.outcome === 'saved');
     if (c?.dc != null) {
       const label = `DC ${c.dc} concentration${c.names?.length ? ` (kept ${c.names.join(', ')})` : ''}`;
       concDemands.push({ ts: m.ts, actorUuid: c.actorUuid, dc: c.dc, label });
@@ -399,6 +505,23 @@ export function foldCombatLedger(scan: any): CombatLedger {
       else t.failed++;
       continue;
     }
+    // A reminded save or concentration check: made or not, where its demand recorded the outcome
+    if (
+      (r.rollType === 'save' || r.rollType === 'concentration') &&
+      r.ctx &&
+      remindedIds.has(r.id)
+    ) {
+      const b = bucketOf(r.ctx);
+      if (!b.legacy) {
+        const a = at(b.key!, r.ctx.sourceUuid ?? r.actorUuid);
+        a.remindedSaves++;
+        const made = saveOutcomeByRoll.get(r.id);
+        if (made !== undefined) {
+          a.remindedSavesJudged++;
+          if (made) a.remindedSavesMade++;
+        }
+      }
+    }
     if (r.d20?.result === 20) flavor.nat20[who] = (flavor.nat20[who] ?? 0) + 1;
     if (r.d20?.result === 1) flavor.nat1[who] = (flavor.nat1[who] ?? 0) + 1;
     if (r.adv === 1) flavor.adv[who] = (flavor.adv[who] ?? 0) + 1;
@@ -411,8 +534,13 @@ export function foldCombatLedger(scan: any): CombatLedger {
         bump(b.key!, b.round);
         const src = at(b.key!, r.ctx.sourceUuid ?? r.actorUuid);
         const judged = (r.targets ?? []).filter((t: any) => t.ac != null);
+        const hit = judged.some((t: any) => r.total >= t.ac);
         src.attacksMade++;
-        if (judged.some((t: any) => r.total >= t.ac)) src.attacksHit++;
+        if (hit) src.attacksHit++;
+        if (remindedIds.has(r.id)) {
+          src.remindedAttacks++;
+          if (hit) src.remindedHits++;
+        }
         for (const t of r.targets ?? []) at(b.key!, t.uuid).targeted++;
       }
     }
@@ -548,6 +676,34 @@ export function renderCombatReport(
           .map(([k, n]) => `${k}×${n}`)
           .join(', ');
         if (moments) bits.push(moments);
+      }
+      if (on('moments') && a.reminded) {
+        const why = [
+          Object.entries(a.remindedNet)
+            .sort((x, y) => y[1] - x[1])
+            .map(([net, n]) => `${net === 'normal' ? 'flat' : net} ${n}`)
+            .join(', '),
+        ];
+        const against = a.reminded - a.remindedHonoured;
+        if (against) why.push(`${against} rolled against the net`);
+        if (a.remindedAttacks) why.push(`attacks hit ${a.remindedHits}/${a.remindedAttacks}`);
+        if (a.remindedSavesJudged)
+          why.push(`saves made ${a.remindedSavesMade}/${a.remindedSavesJudged}`);
+        else if (a.remindedSaves) why.push(`${a.remindedSaves} on saves`);
+        bits.push(`reminded ${a.reminded}× (${why.join('; ')})`);
+      }
+      if (on('moments')) {
+        const chips = Object.entries(a.chips)
+          .map(([c, n]) => `${c} ×${n}`)
+          .join(', ');
+        if (chips)
+          bits.push(
+            `chips spent: ${chips}${a.chipsNotHonoured ? ` (${a.chipsNotHonoured} not honoured)` : ''}`
+          );
+        const wards = Object.entries(a.wards)
+          .map(([w, v]) => `${w} ×${v.n} (${v.total} dmg)`)
+          .join(', ');
+        if (wards) bits.push(`wards struck: ${wards}`);
       }
       if (on('spends')) {
         const pools = Object.entries(a.pools)

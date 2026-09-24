@@ -605,3 +605,192 @@ describe('renderCombatReport', () => {
     expect(aldric).not.toContain('Goblin (×2)');
   });
 });
+
+/**
+ * The 2026-09-01 / 2026-09-05 families. Shapes mirror the records surveyed on the sandbox's
+ * mirror of a real session (2026-09-23): reminder {sources, net, mode, honoured, answeredAt},
+ * chipSpend {targets: [], spent: [{name, key, uuid, bearer, mode, honoured}]}, damageShield
+ * {key, attackerUuid, attackerName, defenderName, rolled, total, type}. Every one carries the
+ * stamp (combat + sourceUuid).
+ */
+describe('foldCombatLedger: the 2026-09 families', () => {
+  const croc = SYNTH('tc', 'croc');
+  const reminder = (net: string, mode: string, sourceUuid = 'Actor.A', combat = 'C1:1:0') => ({
+    sources: [{ kind: 'prone', bend: 'advantage', label: 'Target is Prone' }],
+    net,
+    mode,
+    honoured: mode === net,
+    answeredAt: 5,
+    combat,
+    sourceUuid,
+  });
+  const ward = (total: number, rolled: boolean) => ({
+    key: 'Death Armor',
+    attackerUuid: croc,
+    attackerName: 'Giant Crocodile',
+    defenderName: 'Brenna',
+    rolled,
+    ...(rolled ? { formula: '2d4', total, type: 'necrotic' } : {}),
+    combat: 'C1:2:1',
+    sourceUuid: 'Actor.B',
+  });
+  const swing = (id: string, total: number, adv: number) => ({
+    id,
+    ts: 1,
+    rollType: 'attack',
+    total,
+    actorUuid: 'Actor.A',
+    ctx: { combat: 'C1:1:0', sourceUuid: 'Actor.A' },
+    adv,
+    d20: { result: total - 3, all: [total - 3] },
+    bonusDice: [],
+    targets: [{ uuid: croc, name: 'Giant Crocodile', ac: 12 }],
+  });
+  const scan = {
+    world: 'test',
+    scannedAt: 0,
+    totalMessages: 12,
+    combats: { C1: 'Temple Fight' },
+    rosters: {},
+    // no entry for the crocodile's synthetic uuid: its name has to come off the wire
+    names: { 'Actor.A': 'Aldric', 'Actor.B': 'Brenna' },
+    stamped: [
+      // two reminded swings by Aldric: one honoured, one rolled flat against the net
+      { id: 'r1', ts: 1, flags: { reminder: reminder('advantage', 'advantage') } },
+      { id: 'r2', ts: 2, flags: { reminder: reminder('advantage', 'normal') } },
+      // the gate also meets saves: Brenna's reminded save, made against the crocodile's DC
+      {
+        id: 's1',
+        ts: 2,
+        flags: { reminder: reminder('advantage', 'advantage', 'Actor.B', 'C1:2:0') },
+      },
+      {
+        id: 'd1',
+        ts: 2,
+        flags: {
+          saves: {
+            dc: 13,
+            targets: [{ uuid: 'Actor.B', name: 'Brenna', outcome: 'saved', rollMessageId: 's1' }],
+            combat: 'C1:2:0',
+            sourceUuid: croc,
+          },
+        },
+      },
+      // the crocodile's swing used up its own Sapped chip
+      {
+        id: 'c1',
+        ts: 3,
+        flags: {
+          chipSpend: {
+            targets: [],
+            spent: [
+              {
+                id: 'e1',
+                name: 'Sapped',
+                key: 'sap',
+                uuid: croc,
+                bearer: 'Giant Crocodile',
+                mode: 'normal',
+                honoured: true,
+              },
+            ],
+            combat: 'C1:2:1',
+            sourceUuid: croc,
+          },
+        },
+      },
+      // Brenna's ward struck twice; the unread card (rolled: false) never counts
+      { id: 'w1', ts: 4, flags: { damageShield: ward(4, true) } },
+      { id: 'w2', ts: 5, flags: { damageShield: ward(5, true) } },
+      { id: 'w3', ts: 6, flags: { damageShield: ward(0, false) } },
+      // maneuvers: one use, one ride carrying two dice
+      {
+        id: 'u1',
+        ts: 7,
+        flags: { superiorityUse: { key: 'Rally', combat: 'C1:3:0', sourceUuid: 'Actor.A' } },
+      },
+      {
+        id: 'u2',
+        ts: 8,
+        flags: {
+          superiorityRide: {
+            attackId: 'r1',
+            rode: [{ key: 'Lunging Attack' }, { key: 'Feinting Attack' }],
+            combat: 'C1:3:0',
+            sourceUuid: 'Actor.A',
+          },
+        },
+      },
+    ],
+    // r1 hits AC 12, r2 misses; x1 was never reminded and hits; s1 is Brenna's save
+    d20s: [
+      swing('r1', 15, 1),
+      swing('r2', 9, 0),
+      swing('x1', 14, 0),
+      {
+        id: 's1',
+        ts: 2,
+        rollType: 'save',
+        total: 15,
+        actorUuid: 'Actor.B',
+        ctx: { combat: 'C1:2:0', sourceUuid: 'Actor.B' },
+        adv: 1,
+        d20: { result: 13, all: [13, 4] },
+        bonusDice: [],
+        targets: [],
+      },
+    ],
+  };
+  const ledger = foldCombatLedger(scan);
+  const actors = ledger.combats.C1.actors;
+
+  it('folds the reminders: the net named, how many were honoured, and the reminded hits', () => {
+    const a = actors['Actor.A'];
+    expect(a.reminded).toBe(2);
+    expect(a.remindedHonoured).toBe(1);
+    expect(a.remindedNet).toEqual({ advantage: 2 });
+    expect(a.remindedAttacks).toBe(2);
+    expect(a.remindedHits).toBe(1);
+    expect(a.attacksMade).toBe(3);
+    expect(a.attacksHit).toBe(2);
+    expect(a.remindedSaves).toBe(0);
+  });
+
+  it('joins a reminded save to its outcome by the roll message id', () => {
+    const b = actors['Actor.B'];
+    expect(b.reminded).toBe(1);
+    expect(b.remindedSaves).toBe(1);
+    expect(b.remindedSavesJudged).toBe(1);
+    expect(b.remindedSavesMade).toBe(1);
+    expect(b.remindedAttacks).toBe(0);
+  });
+
+  it('credits chips to the attacker whose swing spent them, named from the wire', () => {
+    const c = actors['archetype:Giant Crocodile'];
+    expect(c.chips).toEqual({ Sapped: 1 });
+    expect(c.chipsNotHonoured).toBe(0);
+    expect(c.name).toBe('Giant Crocodile');
+  });
+
+  it('counts rolled ward strikes for the defender, and adds no damage of its own', () => {
+    const b = actors['Actor.B'];
+    expect(b.wards).toEqual({ 'Death Armor': { n: 2, total: 9 } });
+    expect(b.dealt).toBe(0); // the ward's damage arrives through its receipt, not this flag
+  });
+
+  it('counts the maneuver moments, one per superiority die that rode', () => {
+    expect(actors['Actor.A'].moments).toEqual({ superiorityUse: 1, superiorityRide: 2 });
+    expect(ledger.combats.C1.rounds).toBe(3);
+    expect(ledger.legacy).toBe(0);
+  });
+
+  it('renders the new lines under moments', () => {
+    const out = renderCombatReport(scan, ledger);
+    expect(out).toContain('reminded 2× (advantage 2; 1 rolled against the net; attacks hit 1/2)');
+    expect(out).toContain('reminded 1× (advantage 1; saves made 1/1)');
+    expect(out).toContain('chips spent: Sapped ×1');
+    expect(out).toContain('wards struck: Death Armor ×2 (9 dmg)');
+    expect(out).toContain('superiorityUse×1, superiorityRide×2');
+    expect(renderCombatReport(scan, ledger, { sections: ['damage'] })).not.toContain('reminded');
+  });
+});
