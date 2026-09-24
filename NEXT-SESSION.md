@@ -66,11 +66,13 @@ The scan reads the contract table's 2026-09-01 and 2026-09-05 families: `reminde
 window, stamped messages went 166 → 193, every existing number was unchanged, and the report
 gained 32 reminders, 4 chips and 4 ward strikes. The owner saw the before and after.
 
-**Contract drift found, for the owner or the Battle Flow session to rule on:**
-- `castApply.choice` is in the table but carries no stamp.
-- `emanationCard` and `clockRiders` are stamped but missing from the table.
-- `reminder` is stamped on saves and concentration checks as well as attacks; the table says
-  attacks.
+**Contract drift, ruled and fixed (owner, 2026-09-23):** Battle Flow 91d2c16 made the table
+match the code.
+- `clockRiders` and `emanationCard` are rows now, and the scan reads them. Riders are counted by
+  name; auras are named once, because the card is reposted each time the aura stands.
+- `castApply.choice` is out: unstamped by ruling, since its effect is stamped in `effectReceipt`.
+- The `reminder` row covers saves and concentration checks as well as attacks.
+- On 2026-09-22: stamped 193 → 199, Jetten's Dreadful Strike ×3, Invictus's Aura of Protection.
 
 ## 1 · The first real session through the scribe
 

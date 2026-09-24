@@ -104,7 +104,9 @@ Let `date` be the session's real date (`YYYY-MM-DD`).
    - the gate's reminders, on attacks and on saves: the net it named, rolls made against it,
      attack hits and saves made when reminded;
    - the chips each swing used up;
-   - damage-shield strikes. Their damage is already in `dealt`, so don't add it twice.
+   - the clock riders that rode a hit (Dreadful Strike, Divine Strike …) and damage-shield
+     strikes. Their damage is already in `dealt`, so don't add it twice;
+   - the auras each actor stood, named once.
 
    These feed "what the buffs and features actually bought".
 6. **Write the artifacts** (your judgment — read BOTH transcripts fully first). The set is

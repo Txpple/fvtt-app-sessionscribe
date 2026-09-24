@@ -22,11 +22,8 @@ const BF_MOD = 'fvtt-mod-battleflow';
 // Families folded from `stamped`: the contract table's stamped flags. rollCtx and combatRoster
 // are deliberately NOT here: rollCtx rides the d20 entries (its message IS the roll), and
 // combatRoster feeds `rosters`.
-// Also left out:
-//   • castApply: the table lists `castApply.choice`, but that choice carries no stamp (no
-//     `combat`, no `sourceUuid`; Battle Flow polish.js castChoice). Reading it would count every
-//     cast card as a legacy record.
-//   • emanationCard and clockRiders: stamped, but not in the table yet. Read them once they are.
+// castApply is left out too: its `choice` is unstamped by ruling (owner, 2026-09-23; the effect
+// it picks is stamped in effectReceipt), so reading it would count every cast card as legacy.
 export const BF_KEYS = [
   'receipt',
   'effectReceipt',
@@ -55,6 +52,9 @@ export const BF_KEYS = [
   'damageCast',
   'emanationHeal',
   'emanationRemind',
+  // in the table since 2026-09-23: a clock rider riding a hit, and an aura's card
+  'clockRiders',
+  'emanationCard',
 ];
 const D20_TYPES = new Set(['attack', 'save', 'ability', 'skill', 'tool', 'concentration', 'death']);
 

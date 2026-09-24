@@ -709,6 +709,34 @@ describe('foldCombatLedger: the 2026-09 families', () => {
         ts: 7,
         flags: { superiorityUse: { key: 'Rally', combat: 'C1:3:0', sourceUuid: 'Actor.A' } },
       },
+      // clock riders on two of Aldric's damage rolls; one roll carried two
+      ...[['Dreadful Strike'], ['Dreadful Strike', 'Divine Strike']].map((labels, i) => ({
+        id: `k${i}`,
+        ts: 9 + i,
+        flags: {
+          clockRiders: {
+            attackId: 'r1',
+            riders: labels.map(label => ({ key: label.toLowerCase(), label, formula: '2d6' })),
+            combat: 'C1:3:0',
+            sourceUuid: 'Actor.A',
+          },
+        },
+      })),
+      // Brenna's aura card, reposted out of combat each time it stands again
+      ...[11, 12].map(ts => ({
+        id: `e${ts}`,
+        ts,
+        flags: {
+          emanationCard: {
+            key: 'Aura of Protection',
+            verb: 'stands',
+            range: 10,
+            regionId: null,
+            combat: null,
+            sourceUuid: 'Actor.B',
+          },
+        },
+      })),
       {
         id: 'u2',
         ts: 8,
@@ -778,6 +806,17 @@ describe('foldCombatLedger: the 2026-09 families', () => {
     expect(b.dealt).toBe(0); // the ward's damage arrives through its receipt, not this flag
   });
 
+  it('counts clock riders by name for the attacker, adding no damage', () => {
+    const a = actors['Actor.A'];
+    expect(a.riders).toEqual({ 'Dreadful Strike': 2, 'Divine Strike': 1 });
+    expect(a.dealt).toBe(0);
+  });
+
+  it('names an aura once however many times its card was reposted', () => {
+    const b = ledger.combats['out-of-combat'].actors['Actor.B'];
+    expect(b.auras).toEqual(['Aura of Protection']);
+  });
+
   it('counts the maneuver moments, one per superiority die that rode', () => {
     expect(actors['Actor.A'].moments).toEqual({ superiorityUse: 1, superiorityRide: 2 });
     expect(ledger.combats.C1.rounds).toBe(3);
@@ -791,6 +830,9 @@ describe('foldCombatLedger: the 2026-09 families', () => {
     expect(out).toContain('chips spent: Sapped ×1');
     expect(out).toContain('wards struck: Death Armor ×2 (9 dmg)');
     expect(out).toContain('superiorityUse×1, superiorityRide×2');
+    expect(out).toContain('riders: Dreadful Strike ×2, Divine Strike ×1');
+    expect(out).toContain('auras: Aura of Protection');
+    expect(out).not.toContain('Aura of Protection ×');
     expect(renderCombatReport(scan, ledger, { sections: ['damage'] })).not.toContain('reminded');
   });
 });

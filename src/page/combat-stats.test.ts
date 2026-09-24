@@ -30,11 +30,13 @@ describe('BF_KEYS (the families the scan folds)', () => {
       'damageCast',
       'emanationHeal',
       'emanationRemind',
+      'clockRiders',
+      'emanationCard',
     ])
       expect(BF_KEYS).toContain(k);
   });
 
-  it('leaves out castApply (its choice is unstamped) and the rollCtx / combatRoster riders', () => {
+  it('leaves out castApply (unstamped by ruling) and the rollCtx / combatRoster riders', () => {
     for (const k of ['castApply', 'rollCtx', 'combatRoster']) expect(BF_KEYS).not.toContain(k);
   });
 });

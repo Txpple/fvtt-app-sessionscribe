@@ -79,6 +79,12 @@ export interface ActorAgg {
   /** this defender's damage shields that struck back. The damage itself is already in `dealt`
    *  (the ward's own receipt), so this only counts the strikes. */
   wards: Record<string, { n: number; total: number }>;
+  /** clock riders that rode this attacker's hits (Dreadful Strike, Divine Strike …), by name.
+   *  Their damage is already in `dealt`, through the receipt. */
+  riders: Record<string, number>;
+  /** the auras this actor's emanations stood, each named once: the card is reposted every time
+   *  the aura stands again, so a count would measure bookkeeping, not play */
+  auras: string[];
 }
 
 export interface CombatLedger {
@@ -196,6 +202,8 @@ export function foldCombatLedger(scan: any): CombatLedger {
         chips: {},
         chipsNotHonoured: 0,
         wards: {},
+        riders: {},
+        auras: [],
       };
       tokenSets.set(a, new Set());
     }
@@ -395,6 +403,31 @@ export function foldCombatLedger(scan: any): CombatLedger {
         a.wards[ward] ??= { n: 0, total: 0 };
         a.wards[ward].n++;
         a.wards[ward].total += Number(F.damageShield.total) || 0;
+      }
+    }
+
+    // Clock riders on a damage message, one entry per feature that rode the hit
+    if (F.clockRiders) {
+      const b = bucketOf(F.clockRiders);
+      if (b.legacy) legacy++;
+      else {
+        bump(b.key!, b.round);
+        const a = at(b.key!, F.clockRiders.sourceUuid);
+        for (const d of F.clockRiders.riders ?? []) {
+          const rider = d?.label ?? d?.key ?? 'rider';
+          a.riders[rider] = (a.riders[rider] ?? 0) + 1;
+        }
+      }
+    }
+
+    // An aura's card: named once per bucket, never counted (see ActorAgg.auras)
+    if (F.emanationCard) {
+      const b = bucketOf(F.emanationCard);
+      if (b.legacy) legacy++;
+      else {
+        const a = at(b.key!, F.emanationCard.sourceUuid);
+        const aura = F.emanationCard.key ?? 'aura';
+        if (!a.auras.includes(aura)) a.auras.push(aura);
       }
     }
 
@@ -704,6 +737,11 @@ export function renderCombatReport(
           .map(([w, v]) => `${w} ×${v.n} (${v.total} dmg)`)
           .join(', ');
         if (wards) bits.push(`wards struck: ${wards}`);
+        const riders = Object.entries(a.riders)
+          .map(([r, n]) => `${r} ×${n}`)
+          .join(', ');
+        if (riders) bits.push(`riders: ${riders}`);
+        if (a.auras.length) bits.push(`auras: ${a.auras.join(', ')}`);
       }
       if (on('spends')) {
         const pools = Object.entries(a.pools)
