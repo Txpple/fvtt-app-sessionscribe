@@ -10,6 +10,7 @@
 //      is identical at connect and 30 s later. Run it with NO other GM connected (disconnect the
 //      MCP bridge with its disconnect-bridge tool first): that is the case where the scribe is the
 //      elected GM, and Battle Flow's GM-only code would run on its page if anything triggered it.
+//      A write at `ready` predates that first fingerprint, so nothing may be newer than the join.
 //
 //   FOUNDRY_HOST=local node scripts/verify-reader.mjs
 
@@ -75,6 +76,7 @@ const fingerprint = () => {
     scenes: of(game.scenes),
   });
 };
+const joinedAt = Date.now(); // the sandbox runs on this machine, so its clock is ours
 const session = await openScribeSession('local');
 try {
   const probe = await session.call('probe');
@@ -84,6 +86,12 @@ try {
       ` · elected: ${probe.activeGM?.name ?? 'none'}${probe.activeGM?.isSelf ? ' (the scribe)' : ''}`
   );
   const a = await session.f.evaluate(fingerprint, null);
+  // A write at `ready` lands before the first fingerprint, so the idle comparison can't see it
+  const touched = Object.entries(JSON.parse(a)).filter(([, c]) => c.newest >= joinedAt);
+  check(
+    touched.length === 0,
+    `nothing was modified while the scribe joined${touched.length ? ` — touched: ${touched.map(([k]) => k).join(', ')}` : ''}`
+  );
   await new Promise(r => setTimeout(r, 30_000));
   const b = await session.f.evaluate(fingerprint, null);
   check(

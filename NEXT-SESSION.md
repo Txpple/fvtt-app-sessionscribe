@@ -17,84 +17,41 @@ order, with its gates. Update it as you go, and delete a step's block when it la
   - `fetch-recording`: the zip path on the real 2026-09-22 zip.
   - `transcribe-recording`: on CUDA through the job path, resume included.
   - `render-pdf`: 2026-09-22's four PDFs match the committed page counts and sizes.
-- **Not yet proven live:**
-  - the reader child;
-  - `analyze-combat`, `export-session-chat` and `snapshot-party` against a world;
-  - the Craig *link* path (it needs a fresh recording; covered on fakes).
+- **Proven live on the sandbox (2026-09-23 evening; Foundry 14.368, dnd5e 6.0.5, Battle Flow
+  2.0.5, the scribe the only and elected GM):**
+  - `verify-reader`: 4/4. No user is left connected, and nothing is modified during the join or
+    in 30 s of idle.
+  - `parity-combat`: all 10 windows are identical (176 stamped, 126 d20s).
+  - `parity-chat`: all 10 windows are identical (531 records, 10 whispered).
+  - `parity-snapshot`: all four PCs are byte-identical.
+  - **Coverage caveat:** the world's chat starts at 2026-09-22. Every earlier window therefore
+    holds the whole log, and the combat and chat parity really compared two inputs.
+- **Not yet proven live:** the Craig *link* path. It needs a fresh recording; it is covered on
+  fakes.
 - **Owner rulings in force (2026-09-23):**
-  - The scribe logs in as its own **Scribe Assistant** (Assistant GM) user.
+  - The scribe logs in as its own **Scribe Assistant** (Assistant GM) user. It exists on prod and
+    the sandbox, and the password is in `.env`.
   - **`export-chat-log` stays in the MCP** as the general exporter.
-  - The MCP's copies are **retired as soon as parity passes**.
-  - The other MCP session's uncommitted edits get **committed first, if the MCP gate is green**.
+  - The MCP's copies are **retired as soon as parity passes**. Parity has now passed.
 - **Campaign repo:** `campaign.json` now has `sessions.speakers` (Discord id → label), pushed as
   446b184.
 
-## Blockers (check each before starting)
-
-1. **The Scribe Assistant login.**
-   - The owner creates the user in prod Foundry (the sandbox gets it on its next pull from prod,
-     or they create it there too).
-   - Then they fill `FOUNDRY_SCRIBE_PASSWORD=` in this repo's `.env`.
-   - It was still blank at handoff. Never handle the password yourself; ask.
-   - `scribe-status` reports it: `checks.identity`.
-2. **A quiet sandbox.**
-   - Another session was running Battle Flow suites there all day (`tools/battery.mjs`,
-     `smoke-*.mjs`, joined as Tester Assistant).
-   - Check `FOUNDRY_HOST=local node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`.
-   - Also look for running `node … tools/*.mjs` processes:
-     `Get-CimInstance Win32_Process -Filter "Name='node.exe'"` and their command lines.
-   - One world-driver at a time; never borrow the suite identity.
-3. **A Claude Code restart.**
-   - The owner restarts, to load the `scribe` server and the skill.
-   - Afterwards, `mcp__scribe__scribe-status { connect: true, host: "local" }` is the smoke test.
-
-## 1 · The live gates (sandbox only)
-
-```bash
-npm run build
-FOUNDRY_HOST=local node scripts/verify-reader.mjs     # the reader's gate; see its header
-FOUNDRY_HOST=local node scripts/parity-combat.mjs     # analyze-combat vs get-combat-stats
-FOUNDRY_HOST=local node scripts/parity-chat.mjs       # export-session-chat vs export-chat-log
-FOUNDRY_HOST=local node scripts/parity-snapshot.mjs   # snapshot-party vs manage-actors export, bytes
-```
-
-**verify-reader:**
-- A read leaves no scribe user connected.
-- An idle scribe connection changes nothing. Run that part with no other GM connected: call
-  `disconnect-bridge` on the foundry-local5e MCP first.
-- If Battle Flow does GM-only work on the scribe's page at `ready` (the fingerprint moves),
-  that is a finding for the owner. Don't patch around it.
-
-**parity-combat:**
-- The MCP scan and ours must be deep-equal for every session window and the whole log, and the
-  report text identical.
-- Ours adds only `until`; the script prints what `until` trims.
-
-**parity-chat:**
-- Same ids, and the same value on every MCP field.
-- `whisper` must agree with `whisperCount`.
-
-**parity-snapshot:**
-- Byte-identical exports per party PC. It writes nothing.
-
-**If a parity check FAILS:**
-- Fix the scribe side; the MCP is the reference until retirement.
-- Record the numbers in the commit message.
+**Before any sandbox run:**
+- Check `FOUNDRY_HOST=local node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`.
+- Check for `node … tools/*.mjs` processes:
+  `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`.
+- The Battle Flow session takes the sandbox for deploys and batteries, and says so by
+  cross-session message. Wait for its all-clear.
 
 ## 2 · The MCP retirement: fvtt-mcp-dnd5e 4.0.0
 
-Only after step 1 is green. The MCP is in maintenance (`CONTRIBUTING.md`): one change per
+Step 1 (the live gates) is green. The MCP is in maintenance (`CONTRIBUTING.md`): one change per
 commit, the numbers in the message, `design.md` first.
 
-**0. The other session's work.** At handoff, `git status` there showed uncommitted edits in
-`CHANGELOG.md`, `src/tools/chat.ts`, `src/page/chat.ts` and `src/page/chat-helpers.ts` (+ its
-test): a `send-chat-message` `speakerAlias` fix, and more by then. Check whether that session is
-still active (the edits keep changing), then:
-- If it has gone quiet and the gate
-  `npm run check && npm run typecheck && npm test && npm run build && npm run knip` is green,
-  commit them as their own commit, credited as that session's work.
-- If the gate is red or the edits are still moving, **stop and ask the owner.**
-- Never rebuild `dist/` over someone's unfinished work: the live servers run from it.
+The other session's work has landed. The `speakerAlias` / narrator fix shipped in 3.0.1
+(da8305e), along with dnd5e 6.0.5. The MCP is at 3.0.1 with a clean tree, so the line numbers
+below have drifted further. Still check `git status` there before each commit. Never rebuild
+`dist/` over someone's unfinished work: the live servers run from it.
 
 **Commit A (docs first).** `design.md` records the owner's 2026-09-23 ruling:
 - it reverses 3.0 decisions #16 (session-scribe stays) and #17 (get-combat-stats stays);

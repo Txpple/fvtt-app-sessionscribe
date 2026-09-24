@@ -22,11 +22,11 @@ that repo's 3.0 decisions #16 and #17). All eight tools and the skill have lande
   - fetch-recording: the real 2026-09-22 zip.
   - transcribe-recording: on CUDA, resume included.
   - render-pdf: 2026-09-22's four PDFs.
-- **Pending, both needing the owner's Scribe Assistant user and a quiet sandbox:**
-  - the live parity runs `scripts/parity-{combat,chat,snapshot}.mjs`;
-  - the reader's live gate.
-- **After those:** the MCP's copies are retired (its 4.0.0: `get-combat-stats`, the
-  `session-scribe` skill), and Battle Flow and the campaign repo get their doc pointers.
+- **Proven live on the sandbox, as Scribe Assistant:**
+  - the reader's gate `scripts/verify-reader.mjs`;
+  - the parity runs `scripts/parity-{combat,chat,snapshot}.mjs`.
+- **Next:** the MCP's copies are retired (its 4.0.0: `get-combat-stats`, the `session-scribe`
+  skill), and Battle Flow and the campaign repo get their doc pointers.
 
 Until the retirement, `fvtt-mcp-dnd5e` still carries the old `session-scribe` skill and
 `get-combat-stats`. `export-chat-log` stays there for good as the general chat exporter.
