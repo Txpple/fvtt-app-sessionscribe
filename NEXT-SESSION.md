@@ -8,7 +8,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
 
 ## Where things stand
 
-- **Built, on `main`, pushed** (`Txpple/fvtt-app-sessionscribe`, PRIVATE):
+- **Built, on `main`, pushed** (`Txpple/fvtt-app-sessionscribe`, public since 2026-09-24):
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
   - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.
@@ -112,9 +112,11 @@ What it proved:
    dragon "resistant"). The meter is now roll × the entry's save multiplier − the part, label
    ignored. On the real scan the dragon fight reads Gren 15, Morgash 8, Invictus 38, Jetten 16:
    the by-hand count exactly. **Battle Flow's label is fixed at the source too** (54450ec,
-   2026-09-24, owner's go-ahead): `traitOutcome` divides the caller's multiplier out. It is on
-   `main`, not released: prod's rows keep the old labels until the owner releases (v2.0.7).
-   The scribe's meter never reads the label, so nothing here depends on that release.
+   2026-09-24, owner's go-ahead): `traitOutcome` divides the caller's multiplier out.
+   Released as Battle Flow **v2.0.7** (c76ab36, GitHub release with both assets) and
+   hot-deployed to prod, byte-identical, with nobody but the bridge connected; the version
+   string vends 2.0.6 until the Foundry process next restarts, as always. Rows stamped before
+   keep their old labels; the scribe's meter never reads them.
 3. **Templates: `.keep` groups in combat-log and gm-notes**, heading + first block, as in
    recap-print. Measured on the real combat log: a plain-block keep is still split when the
    heading fits at the page foot and its block does not (2 of 11 pixel offsets); with
@@ -129,9 +131,8 @@ What it proved:
 
 ## 1 · Before session 9: what is left
 
-- Nothing on the scribe's side: the server was restarted on the new `dist/` (2026-09-24).
-- Battle Flow's trait-label fix is committed and pushed, not released; releasing is the owner's
-  word (`tools/bump-version.mjs patch`, then its release flow).
+- Nothing. The scribe's server runs the new `dist/` (restarted 2026-09-24) and Battle Flow
+  v2.0.7 is on prod. Session 9 is next: paste the Craig link.
 
 ## 2 · Session 9 (the finale)
 

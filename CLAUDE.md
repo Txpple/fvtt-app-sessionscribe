@@ -151,8 +151,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - **Tools do, skills decide.** Correctness goes in tested code; judgment (recap voice, which beats
   are memorable, curation) stays in the skill.
 - Commit directly to `main` and push. MIT license, author Txpple. The remote is
-  `Txpple/fvtt-app-sessionscribe`, created **private** (the tool siblings are public; flipping
-  it is the owner's call).
+  `Txpple/fvtt-app-sessionscribe`, **public** since 2026-09-24 (the owner's call), like the
+  tool siblings.
 
 ## Machine gotchas (Windows)
 
