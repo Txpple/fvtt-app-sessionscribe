@@ -1,8 +1,9 @@
 # Next session: the handoff
 
-Written 2026-09-23 at the end of the session that built this repo (M1–M11). Read `CLAUDE.md`
-first (architecture, invariants, live-check rules); this file is the work that is left, in
-order, with its gates. Update it as you go, and delete a step's block when it lands.
+First written 2026-09-23 at the end of the session that built this repo (M1–M11). Updated the
+same evening, once the live gates, the MCP retirement and the doc pointers had landed. Read
+`CLAUDE.md` first (architecture, invariants, live-check rules). This file is the work that is
+left, in order, with its gates. Update it as you go, and delete a step's block when it lands.
 
 ## Where things stand
 
@@ -18,120 +19,65 @@ order, with its gates. Update it as you go, and delete a step's block when it la
   - `transcribe-recording`: on CUDA through the job path, resume included.
   - `render-pdf`: 2026-09-22's four PDFs match the committed page counts and sizes.
 - **Proven live on the sandbox (2026-09-23 evening; Foundry 14.368, dnd5e 6.0.5, Battle Flow
-  2.0.5, the scribe the only and elected GM):**
+  2.0.5; the scribe was the only GM connected, so it was the elected GM):**
   - `verify-reader`: 4/4. No user is left connected, and nothing is modified during the join or
     in 30 s of idle.
-  - `parity-combat`: all 10 windows are identical (176 stamped, 126 d20s).
-  - `parity-chat`: all 10 windows are identical (531 records, 10 whispered).
-  - `parity-snapshot`: all four PCs are byte-identical.
+  - Parity with the MCP:
+    - `analyze-combat`: 10/10 windows (176 stamped, 126 d20s).
+    - `export-session-chat`: 10/10 (531 records, 10 whispered).
+    - `snapshot-party`: 4/4 PCs byte-identical.
+    - Chat and snapshot were re-run against MCP 4.0.0 and are still identical.
   - **Coverage caveat:** the world's chat starts at 2026-09-22. Every earlier window therefore
     holds the whole log, and the combat and chat parity really compared two inputs.
-- **Not yet proven live:** the Craig *link* path. It needs a fresh recording; it is covered on
-  fakes.
+- **Retired:** `fvtt-mcp-dnd5e` 4.0.0 (33a8a70 design, 4fb1a9f release, tag `v4.0.0`, pushed).
+  - `get-combat-stats`, the `session-scribe` skill and `session_scribe.py` are gone from the MCP.
+  - `export-chat-log` stays there.
+  - The scripts `parity-combat.mjs` and `parity-transcript.mjs` went with their references.
+    `parity-chat.mjs` and `parity-snapshot.mjs` stay, as regression checks against the MCP's
+    exporters.
+- **Doc pointers landed:**
+  - Battle Flow 863a1f4 (`ARCHITECTURE.md` §4, `DESIGN.md`).
+  - The campaign repo 39ed5ca: `sessions/README.md`, `STYLE.md` and three notes. The DESKTOP-NY
+    auto-sync committed those edits as "notes sync" before I could; the content is ours.
+- **Not yet proven live:**
+  - The Craig *link* path. It needs a fresh recording; it is covered on fakes.
+  - A prod join. The scribe has never joined prod: the login-only check was blocked by the
+    permission classifier. See step 1.
 - **Owner rulings in force (2026-09-23):**
   - The scribe logs in as its own **Scribe Assistant** (Assistant GM) user. It exists on prod and
     the sandbox, and the password is in `.env`.
   - **`export-chat-log` stays in the MCP** as the general exporter.
-  - The MCP's copies are **retired as soon as parity passes**. Parity has now passed.
-- **Campaign repo:** `campaign.json` now has `sessions.speakers` (Discord id → label), pushed as
-  446b184.
 
 **Before any sandbox run:**
 - Check `FOUNDRY_HOST=local node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`.
-- Check for `node … tools/*.mjs` processes:
+- Check for `node … tools/*.mjs` / `verify-*` processes:
   `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`.
-- The Battle Flow session takes the sandbox for deploys and batteries, and says so by
-  cross-session message. Wait for its all-clear.
+- Other sessions run suites there: Battle Flow (Tester Assistant), and on 2026-09-23 also
+  `fvtt-mod-partystash`. The Battle Flow session announces a hold by cross-session message; wait
+  for its all-clear.
 
-## 2 · The MCP retirement: fvtt-mcp-dnd5e 4.0.0
+## 1 · After the owner's Claude Code restart
 
-Step 1 (the live gates) is green. The MCP is in maintenance (`CONTRIBUTING.md`): one change per
-commit, the numbers in the message, `design.md` first.
+The restart loads MCP 4.0.0: its tool list changed.
+- `get-combat-stats` must be gone from `foundry-local5e` and `foundry-molten5e`.
+- The `scribe` tools must still answer.
+- **The first prod join:** `mcp__scribe__scribe-status { connect: true }` (the default host is
+  molten).
+  - Do it when no one is playing, and ideally when no other GM is connected.
+  - `verify-reader` proved on the sandbox that the elected-GM case leaves the world untouched.
+  - It reports the world, the GMs connected and Battle Flow's version.
 
-The other session's work has landed. The `speakerAlias` / narrator fix shipped in 3.0.1
-(da8305e), along with dnd5e 6.0.5. The MCP is at 3.0.1 with a clean tree, so the line numbers
-below have drifted further. Still check `git status` there before each commit. Never rebuild
-`dist/` over someone's unfinished work: the live servers run from it.
-
-**Commit A (docs first).** `design.md` records the owner's 2026-09-23 ruling:
-- it reverses 3.0 decisions #16 (session-scribe stays) and #17 (get-combat-stats stays);
-- session summaries and analytics live in `fvtt-app-sessionscribe`;
-- `export-chat-log` stays here.
-
-**Commit B deletes:**
-- `src/tools/combat-stats{,.test}.ts`
-- `src/page/combat-stats{,.test}.ts`
-- `.claude/skills/session-scribe/`
-
-**Commit B edits** (line numbers from 2026-09-23; re-find them, they drift):
-- `src/registry.ts`: the CombatStatsTools import, its construction and its handler (~56, 139, 358).
-- `src/page/index.ts`: the scanCombatStats import and registration (~153, 318-319).
-- `src/toolsets.ts:92`: `combat: ['configure-combat-tracker']`.
-- `src/tools/registry.test.ts`: the tool count 81 → 80 (~123, 554), and the history comment (~99).
-- `scripts/verify-toolsets.mjs` (~114-117): probe `configure-combat-tracker` instead.
-- `docs/contracts.md`:
-  - ~54: the Battle Flow row's reader is now the scribe's `analyze-combat`;
-  - ~60-62: the doc claims get-combat-stats warns when Battle Flow is absent. It never did; the
-    scribe's stamp line now does.
-- `docs/hosts.md`: the "81 tools" and "combat tracker + analytics" mentions.
-- `README.md` (~49, 58, 78, 80-83): the session-scribe row, the tool counts, the companion-module
-  paragraph.
-- `design.md`: the rows at ~177-179 and ~208, and the skills list at ~357-365.
-- `.claude/skills/_shared/campaign-repo.md`:
-  - session-scribe now lives in fvtt-app-sessionscribe;
-  - document **`sessions.speakers`** (new; read by the scribe's fetch-recording);
-  - document **`transcript-public.md`** (a new file in the record).
-- `.claude/skills/journal-builder/SKILL.md` (~15, 138): the session-scribe mentions.
-- `CHANGELOG.md`: 4.0.0, with the budgets before and after:
-  - tools/list 201,562 → ~200,539;
-  - skill descriptions 7,986 → ~7,526.
-  - Lowering the ceilings in `src/measure.test.ts` is optional, but the convention does it.
-- `package.json` and the lock: 4.0.0.
-
-**Gates:**
-- The offline gate.
-- `node scripts/measure/skills-matrix.mjs`: 0 unresolved / 0 stale.
-- Grep the skills by hand for `get-combat-stats` and `session-scribe`: the matrix only catches
-  `mcp__…` names.
-- On the sandbox: `FOUNDRY_HOST=local node scripts/verify-toolsets.mjs` and
-  `FOUNDRY_HOST=local RUN_LIVE=1 npm run test:integration`.
-
-**Then:** rebuild `dist/`, tag `v4.0.0`, push. The owner restarts Claude Code; after the restart
-`get-combat-stats` is gone from `foundry-*`.
-
-**In this repo afterwards:**
-- Drop the "until the retirement" notes in `CLAUDE.md`.
-- `scripts/parity-{combat,chat,snapshot}.mjs` can go: their MCP reference is gone.
-  `parity-transcript.mjs` goes when `session_scribe.py` does.
-
-## 3 · Doc pointers (one commit per repo, pushed)
-
-Check each repo's `git status` first: other sessions work in them. At handoff Battle Flow had
-uncommitted edits in `ARCHITECTURE.md`, `BACKLOG.md`, `NOTES.md` and `scripts/bash-offer.js`.
-Don't commit someone else's hunks; wait or ask.
-
-- **fvtt-mod-battleflow:**
-  - `ARCHITECTURE.md` §4 (~307-309): the stamp reader is now `fvtt-app-sessionscribe`'s
-    `analyze-combat`. Drop the dead `scripts/party-stats.mjs` mention (~307, ~344).
-  - `DESIGN.md` ~1113: "reporting is that repo's job" now names the scribe.
-- **fvtt-campaign-greenrest:**
-  - `sessions/README.md` (the skill's home; add transcript-public.md to the layout).
-  - `notes/session-recording-pipeline.md` (its "How to apply" names the MCP skill and
-    `session_scribe.py`).
-  - `notes/README.md` ~30 ("stays in the MCP repo").
-  - `STYLE.md` line 3.
-  - `notes/party-snapshot-at-session-wrap.md` (~12, 19).
-
-## 4 · Battle Flow's newer stamp families (optional, owner rules on it)
+## 2 · Battle Flow's newer stamp families (optional, owner rules on it)
 
 The scan's key list (`src/page/combat-stats.ts`) predates `chipSpend`, `reminder` and
-`damageShield(s)` (Battle Flow `ARCHITECTURE.md` ~343-346).
-- **When:** only after step 1's parity. Adding them changes what counts as "stamped", and
-  parity is measured against the MCP's old list.
+`damageShield(s)` (Battle Flow `ARCHITECTURE.md` §4, the stamped-families table).
+- **Why now:** parity is done and the MCP copy is gone, so the scan is free to evolve.
+- **Effect:** adding them changes what counts as "stamped".
 - **How:** synthetic tests; then show the owner a report before and after on a real session
   window.
+- When it lands, drop "(not read there yet)" from Battle Flow's `reminder` row.
 
-## 5 · The first real session through the scribe
+## 3 · The first real session through the scribe
 
 When the owner pastes the next Craig link, run the skill end to end.
 
@@ -139,7 +85,7 @@ The link path of `fetch-recording` (cook → download) has only run against fake
 (`scribe-status { date, waitSeconds }`), and on failure fall back to `zipPath` with the zip the
 DM downloads.
 
-## Things learned the hard way (this session)
+## Things learned the hard way
 
 - **Shell quoting eats Windows backslashes.**
   - Bash heredocs → `node -e` → JS strings turned `C:\Program Files` into `C:Program Files` and
@@ -155,3 +101,10 @@ DM downloads.
   invisible characters with `String.fromCharCode`.
 - **Vitest re-runs a test file that another test file imports.** Shared fakes live in
   `src/testing/`.
+- **The running `scribe` server reads `.env` once, at start.** A password filled in afterwards
+  needs a restart; the scripts, as fresh processes, see it at once.
+- **The MCP's scripts need `FOUNDRY_HOST`,** even ones that never touch a world
+  (`verify-toolsets`). Unset means `generic`, whose placeholder URL makes the server refuse to
+  start.
+- **The campaign repo auto-syncs** (DESKTOP-NY "notes sync" commits). Uncommitted edits there
+  get swept into a generic commit, so commit promptly with a real message.

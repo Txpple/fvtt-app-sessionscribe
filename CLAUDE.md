@@ -24,12 +24,11 @@ that repo's 3.0 decisions #16 and #17). All eight tools and the skill have lande
   - render-pdf: 2026-09-22's four PDFs.
 - **Proven live on the sandbox, as Scribe Assistant:**
   - the reader's gate `scripts/verify-reader.mjs`;
-  - the parity runs `scripts/parity-{combat,chat,snapshot}.mjs`.
-- **Next:** the MCP's copies are retired (its 4.0.0: `get-combat-stats`, the `session-scribe`
-  skill), and Battle Flow and the campaign repo get their doc pointers.
-
-Until the retirement, `fvtt-mcp-dnd5e` still carries the old `session-scribe` skill and
-`get-combat-stats`. `export-chat-log` stays there for good as the general chat exporter.
+  - parity with the MCP for analyze-combat, export-session-chat and snapshot-party.
+- **Retired:** the MCP's copies went in `fvtt-mcp-dnd5e` 4.0.0 (`get-combat-stats`, the
+  `session-scribe` skill and `session_scribe.py`). Battle Flow and the campaign repo point here.
+  `export-chat-log` stays in the MCP for good as the general chat exporter.
+- **Not yet proven:** the Craig *link* path. It needs a fresh recording; it is covered on fakes.
 
 ## Commands
 
@@ -39,8 +38,8 @@ npm run build               # tsc → dist/, then esbuild.page.mjs → dist/page
 npm test                    # vitest, offline (src/**/*.test.ts)
 npx vitest run src/transcript/align.test.ts   # one file; add -t "<name>" for one test
 npm run check && npm run typecheck && npm test && npm run build && npm run knip   # the gate
-node scripts/parity-transcript.mjs                  # offline, against the real sessions
-FOUNDRY_HOST=local node scripts/parity-combat.mjs   # sandbox only (also parity-chat, parity-snapshot)
+FOUNDRY_HOST=local node scripts/verify-reader.mjs   # sandbox only: the reader leaves no trace
+FOUNDRY_HOST=local node scripts/parity-chat.mjs     # sandbox only: vs the MCP's export-chat-log (also parity-snapshot)
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # transcription venv
 ```
 
@@ -88,10 +87,12 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - `scribe-status { date, waitSeconds }` follows a job.
 
 **The ports**
-- `src/analytics/combat.ts` and `src/page/combat-stats.ts` are verbatim copies of the MCP's
-  `get-combat-stats`. Keep them diffable until the retirement.
-- `src/transcript/align.ts` is `session_scribe.py align` line for line, plus the whisper fix and
-  `transcript-public.md`.
+- `src/analytics/combat.ts` and `src/page/combat-stats.ts` were ported verbatim from the MCP's
+  `get-combat-stats`, adding only `until`. Since the MCP's 4.0.0 they are the only copy, so they
+  are free to evolve. The scan's key list is the read contract in Battle Flow's
+  `ARCHITECTURE.md` §4.
+- `src/transcript/align.ts` is the retired `session_scribe.py align`, line for line, plus the
+  whisper fix and `transcript-public.md`.
 - `src/pdf.ts` prints with headless Edge.
 
 **The skill:** `.claude/skills/session-scribe/`, with its templates. It is junctioned to

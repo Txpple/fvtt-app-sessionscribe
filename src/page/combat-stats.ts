@@ -12,6 +12,7 @@
 //   • the fold (src/analytics/combat.ts) subtracts `reverted` — ruling R-B.
 //
 // Ported verbatim from fvtt-mcp-dnd5e's src/page/combat-stats.ts; the one addition is `until`.
+// This is the only copy since that repo's 4.0.0 retired get-combat-stats.
 //
 // READ-ONLY by design: no writes, no settings, no fixtures — safe beside a live session.
 // The scan returns raw JSON; all folding happens Node-side so it is unit-testable.

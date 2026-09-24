@@ -11,8 +11,8 @@
 //        player recap and the session-diary page are written from, so the spoiler boundary is a
 //        file, not a judgment call.
 //
-// Everything else reproduces the Python byte for byte (scripts/parity-transcript.mjs proves it on
-// the real sessions): paragraphs merge a speaker's segments across gaps ≤ 2.5 s up to
+// Everything else reproduces the Python byte for byte, proven on the 9 real sessions before the
+// Python was retired (the parity script went with it): paragraphs merge a speaker's segments across gaps ≤ 2.5 s up to
 // maxParagraphSeconds; chat events are kept within the recording ±120 s; long card text is cut
 // to 200 characters.
 
