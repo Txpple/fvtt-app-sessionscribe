@@ -111,9 +111,10 @@ What it proved:
    (session 8: Gren 32 → 8 unlabelled, Morgash 32 → 16 "resistant", both fireballs on the
    dragon "resistant"). The meter is now roll × the entry's save multiplier − the part, label
    ignored. On the real scan the dragon fight reads Gren 15, Morgash 8, Invictus 38, Jetten 16:
-   the by-hand count exactly. **Cross-repo, the owner's call:** Battle Flow's
-   `decide/receipt.js` `traitOutcome` could divide the caller's multiplier out before reading
-   the outcome; until then its receipt rows say "resistant" on any halved save.
+   the by-hand count exactly. **Battle Flow's label is fixed at the source too** (54450ec,
+   2026-09-24, owner's go-ahead): `traitOutcome` divides the caller's multiplier out. It is on
+   `main`, not released: prod's rows keep the old labels until the owner releases (v2.0.7).
+   The scribe's meter never reads the label, so nothing here depends on that release.
 3. **Templates: `.keep` groups in combat-log and gm-notes**, heading + first block, as in
    recap-print. Measured on the real combat log: a plain-block keep is still split when the
    heading fits at the page foot and its block does not (2 of 11 pixel offsets); with
@@ -128,9 +129,9 @@ What it proved:
 
 ## 1 · Before session 9: what is left
 
-- The restart above.
-- Battle Flow's trait label (item 2), if the owner wants the receipt rows right as well as the
-  scribe's meter.
+- Nothing on the scribe's side: the server was restarted on the new `dist/` (2026-09-24).
+- Battle Flow's trait-label fix is committed and pushed, not released; releasing is the owner's
+  word (`tools/bump-version.mjs patch`, then its release flow).
 
 ## 2 · Session 9 (the finale)
 
