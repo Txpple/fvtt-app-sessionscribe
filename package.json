@@ -1,7 +1,7 @@
 {
   "name": "fvtt-app-sessionscribe",
   "version": "0.1.0",
-  "description": "Session summaries and analytics for Foundry VTT dnd5e tables: an MCP server that turns a Craig recording and the Foundry chat log into the session record, driven by Claude Code.",
+  "description": "Session summaries and analytics for Foundry VTT dnd5e tables: an app, driven by Claude Code, that turns a Craig recording and the Foundry chat log into the session record.",
   "private": true,
   "type": "module",
   "main": "dist/index.js",

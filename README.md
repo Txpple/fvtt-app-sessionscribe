@@ -1,11 +1,14 @@
 # fvtt-app-sessionscribe
 
-An [MCP](https://modelcontextprotocol.io) server and a [Claude Code](https://claude.com/claude-code)
-skill that turn a night at a **D&D 5e** [Foundry VTT](https://foundryvtt.com) table into its
+An app that turns a night at a **D&D 5e** [Foundry VTT](https://foundryvtt.com) table into its
 session record. It reads four inputs: the [Craig](https://craig.chat) recording from Discord, the
 Foundry chat log, [Battle Flow](https://github.com/Txpple/fvtt-mod-battleflow)'s combat stats and
 the party's sheets. From them it writes a speaker-labelled transcript, a player recap (email and
 PDF), a combat report, GM notes and a party snapshot into your campaign repo.
+
+[Claude Code](https://claude.com/claude-code) drives it. The app runs as an
+[MCP](https://modelcontextprotocol.io) server named `scribe`, and its `session-scribe` skill runs
+the pipeline.
 
 It **reads the world and never writes it**. The session-diary page goes in through the sibling
 [`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e).

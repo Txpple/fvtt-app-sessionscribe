@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # fvtt-app-sessionscribe
 
-The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an MCP server
-(registered at user scope as `scribe`) plus the `session-scribe` skill. It reads what happened at
-a session and writes the session record into the campaign repo:
+The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an app, driven
+by Claude Code through its MCP server (registered at user scope as `scribe`) and the
+`session-scribe` skill. It reads what happened at a session and writes the session record into
+the campaign repo:
 - **Inputs:** the Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the
   party's sheets.
 - **Record:** transcripts, recaps, combat logs, GM notes, party snapshots.
