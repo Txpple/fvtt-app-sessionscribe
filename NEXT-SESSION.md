@@ -39,10 +39,13 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   - Battle Flow 863a1f4 (`ARCHITECTURE.md` §4, `DESIGN.md`).
   - The campaign repo 39ed5ca: `sessions/README.md`, `STYLE.md` and three notes. The DESKTOP-NY
     auto-sync committed those edits as "notes sync" before I could; the content is ours.
-- **Not yet proven live:**
-  - The Craig *link* path. It needs a fresh recording; it is covered on fakes.
-  - A prod join. The scribe has never joined prod: the login-only check was blocked by the
-    permission classifier. See step 1.
+- **Proven on prod (2026-09-23 21:19, after the owner's restart):**
+  - `scribe-status { connect: true }` joined as Scribe Assistant (role 3), the only GM and so the
+    elected GM, with no combat running. It reported 485 messages and Battle Flow **2.0.4**.
+  - Prod's user count was 0 before and 0 after.
+  - `get-combat-stats` is gone from both `foundry-*` registrations.
+- **Not yet proven live:** the Craig *link* path. It needs a fresh recording; it is covered on
+  fakes.
 - **Owner rulings in force (2026-09-23):**
   - The scribe logs in as its own **Scribe Assistant** (Assistant GM) user. It exists on prod and
     the sandbox, and the password is in `.env`.
@@ -56,18 +59,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   `fvtt-mod-partystash`. The Battle Flow session announces a hold by cross-session message; wait
   for its all-clear.
 
-## 1 · After the owner's Claude Code restart
-
-The restart loads MCP 4.0.0: its tool list changed.
-- `get-combat-stats` must be gone from `foundry-local5e` and `foundry-molten5e`.
-- The `scribe` tools must still answer.
-- **The first prod join:** `mcp__scribe__scribe-status { connect: true }` (the default host is
-  molten).
-  - Do it when no one is playing, and ideally when no other GM is connected.
-  - `verify-reader` proved on the sandbox that the elected-GM case leaves the world untouched.
-  - It reports the world, the GMs connected and Battle Flow's version.
-
-## 2 · Battle Flow's newer stamp families (optional, owner rules on it)
+## 1 · Battle Flow's newer stamp families (optional, owner rules on it)
 
 The scan's key list (`src/page/combat-stats.ts`) predates `chipSpend`, `reminder` and
 `damageShield(s)` (Battle Flow `ARCHITECTURE.md` §4, the stamped-families table).
@@ -77,7 +69,7 @@ The scan's key list (`src/page/combat-stats.ts`) predates `chipSpend`, `reminder
   window.
 - When it lands, drop "(not read there yet)" from Battle Flow's `reminder` row.
 
-## 3 · The first real session through the scribe
+## 2 · The first real session through the scribe
 
 When the owner pastes the next Craig link, run the skill end to end.
 
