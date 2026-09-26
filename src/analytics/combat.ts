@@ -82,6 +82,11 @@ export interface ActorAgg {
   /** clock riders that rode this attacker's hits (Dreadful Strike, Divine Strike …), by name.
    *  Their damage is already in `dealt`, through the receipt. */
   riders: Record<string, number>;
+  /** Fighting Styles that CHANGED this attacker's damage rolls (Battle Flow's `fightingStyle`,
+   *  2026-09-26), by name: how many rolls, and the damage the style ADDED (Great Weapon Fighting's
+   *  raised dice, Thrown's and Dueling's +2, Two-Weapon's modifier). The damage itself is already
+   *  in `dealt`, through the receipt; `gain` says how much of it the style was. */
+  styles: Record<string, { n: number; gain: number }>;
   /** the auras this actor's emanations stood, each named once: the card is reposted every time
    *  the aura stands again, so a count would measure bookkeeping, not play */
   auras: string[];
@@ -203,6 +208,7 @@ export function foldCombatLedger(scan: any): CombatLedger {
         chipsNotHonoured: 0,
         wards: {},
         riders: {},
+        styles: {},
         auras: [],
       };
       tokenSets.set(a, new Set());
@@ -421,6 +427,24 @@ export function foldCombatLedger(scan: any): CombatLedger {
         for (const d of F.clockRiders.riders ?? []) {
           const rider = d?.label ?? d?.key ?? 'rider';
           a.riders[rider] = (a.riders[rider] ?? 0) + 1;
+        }
+      }
+    }
+
+    // A Fighting Style's number on a damage roll, per style that changed it (an `off` entry adds 0)
+    if (F.fightingStyle) {
+      const b = bucketOf(F.fightingStyle);
+      if (b.legacy) legacy++;
+      else {
+        bump(b.key!, b.round);
+        const a = at(b.key!, F.fightingStyle.sourceUuid);
+        for (const st of F.fightingStyle.styles ?? []) {
+          const gain = Number(st?.gain) || 0;
+          if (gain <= 0) continue;
+          const style = st?.feature ?? st?.key ?? 'style';
+          a.styles[style] ??= { n: 0, gain: 0 };
+          a.styles[style].n++;
+          a.styles[style].gain += gain;
         }
       }
     }
@@ -746,6 +770,10 @@ export function renderCombatReport(
           .map(([r, n]) => `${r} ×${n}`)
           .join(', ');
         if (riders) bits.push(`riders: ${riders}`);
+        const styles = Object.entries(a.styles)
+          .map(([st, v]) => `${st} ×${v.n} (+${v.gain} dmg)`)
+          .join(', ');
+        if (styles) bits.push(`fighting styles: ${styles}`);
         if (a.auras.length) bits.push(`auras: ${a.auras.join(', ')}`);
       }
       if (on('spends')) {

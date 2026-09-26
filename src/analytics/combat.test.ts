@@ -744,6 +744,33 @@ describe('foldCombatLedger: the 2026-09 families', () => {
           },
         },
       })),
+      // Aldric's Great Weapon Fighting raising two damage rolls (one raised nothing: no record at all)
+      ...[
+        [
+          {
+            key: 'great-weapon-fighting',
+            feature: 'Great Weapon Fighting',
+            gain: 2,
+            raised: [{ from: 1, to: 3 }],
+          },
+        ],
+        [
+          {
+            key: 'great-weapon-fighting',
+            feature: 'Great Weapon Fighting',
+            gain: 3,
+            raised: [
+              { from: 1, to: 3 },
+              { from: 2, to: 3 },
+            ],
+          },
+          { key: 'dueling', feature: 'Dueling', gain: 0, off: 'two hands' },
+        ],
+      ].map((styles, i) => ({
+        id: `f${i}`,
+        ts: 9.5 + i / 10,
+        flags: { fightingStyle: { styles, gain: 5, combat: 'C1:3:0', sourceUuid: 'Actor.A' } },
+      })),
       // Brenna's aura card, reposted out of combat each time it stands again
       ...[11, 12].map(ts => ({
         id: `e${ts}`,
@@ -834,6 +861,12 @@ describe('foldCombatLedger: the 2026-09 families', () => {
     expect(a.dealt).toBe(0);
   });
 
+  it('adds up what each Fighting Style added, per style, skipping an entry that added nothing', () => {
+    const a = actors['Actor.A'];
+    expect(a.styles).toEqual({ 'Great Weapon Fighting': { n: 2, gain: 5 } });
+    expect(a.dealt).toBe(0);
+  });
+
   it('names an aura once however many times its card was reposted', () => {
     const b = ledger.combats['out-of-combat'].actors['Actor.B'];
     expect(b.auras).toEqual(['Aura of Protection']);
@@ -853,6 +886,7 @@ describe('foldCombatLedger: the 2026-09 families', () => {
     expect(out).toContain('wards struck: Death Armor ×2 (9 dmg)');
     expect(out).toContain('superiorityUse×1, superiorityRide×2');
     expect(out).toContain('riders: Dreadful Strike ×2, Divine Strike ×1');
+    expect(out).toContain('fighting styles: Great Weapon Fighting ×2 (+5 dmg)');
     expect(out).toContain('auras: Aura of Protection');
     expect(out).not.toContain('Aura of Protection ×');
     expect(renderCombatReport(scan, ledger, { sections: ['damage'] })).not.toContain('reminded');

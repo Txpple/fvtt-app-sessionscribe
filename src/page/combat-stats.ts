@@ -55,6 +55,8 @@ export const BF_KEYS = [
   // in the table since 2026-09-23: a clock rider riding a hit, and an aura's card
   'clockRiders',
   'emanationCard',
+  // 2026-09-26: a Fighting Style's number on a damage roll
+  'fightingStyle',
 ];
 const D20_TYPES = new Set(['attack', 'save', 'ability', 'skill', 'tool', 'concentration', 'death']);
 
