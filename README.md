@@ -112,6 +112,9 @@ The live checks run on a sandbox only:
 - `FOUNDRY_HOST=local node scripts/verify-reader.mjs` proves that the reader leaves no trace.
 - `parity-chat.mjs` and `parity-snapshot.mjs` compare the output with the MCP's exporters.
 
+CI runs the offline gate on Node 22 and 24, with `fvtt-mcp-dnd5e` checked out and built beside
+the repo. Releases are tagged and listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

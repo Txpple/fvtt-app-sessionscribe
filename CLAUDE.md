@@ -15,9 +15,11 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-24).** Read [NEXT-SESSION.md](NEXT-SESSION.md) first: it is the handoff, the
-work left in order with its gates. Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing
-that repo's 3.0 decisions #16 and #17). All eight tools and the skill have landed.
+**State (2026-09-30).** Released as **1.0.0**; the campaign it was built for concluded with
+session 9 (2026-09-29), and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
+handoff's history and the hard-won lessons; [CHANGELOG.md](CHANGELOG.md) is the release record.
+Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
+#17). All eight tools and the skill have landed.
 - **Proven:**
   - build-transcript: parity on the 9 real sessions.
   - fetch-recording: the real 2026-09-22 zip, and the **Craig link** (2026-09-24, session 8

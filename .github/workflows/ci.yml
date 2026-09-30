@@ -1,0 +1,66 @@
+name: CI
+
+# The same gates the project expects locally (build, format+lint, typecheck, dead-code, unit
+# tests), on the declared Node floor (>=22) and the dev version (24). The live checks
+# (scripts/verify-reader.mjs, the parity scripts) need a Foundry sandbox and are not run here;
+# `npm test` is the offline unit suite, on fakes.
+#
+# fvtt-mcp-dnd5e is a `file:../fvtt-mcp-dnd5e` dependency (its dist/ is the Foundry client), so
+# the sibling is checked out beside this repo and built before `npm ci` here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: fvtt-app-sessionscribe
+
+      - uses: actions/checkout@v7
+        with:
+          repository: Txpple/fvtt-mcp-dnd5e
+          path: fvtt-mcp-dnd5e
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Build the sibling client (fvtt-mcp-dnd5e)
+        working-directory: fvtt-mcp-dnd5e
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install
+        working-directory: fvtt-app-sessionscribe
+        run: npm ci
+
+      - name: Build (tsc + page bundle)
+        working-directory: fvtt-app-sessionscribe
+        run: npm run build
+
+      - name: Format + lint (biome)
+        working-directory: fvtt-app-sessionscribe
+        run: npm run check
+
+      - name: Typecheck
+        working-directory: fvtt-app-sessionscribe
+        run: npm run typecheck
+
+      - name: Dead-code check (knip)
+        working-directory: fvtt-app-sessionscribe
+        run: npm run knip
+
+      - name: Unit tests
+        working-directory: fvtt-app-sessionscribe
+        run: npm test
