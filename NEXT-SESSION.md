@@ -12,7 +12,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
   - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.
-- **The offline gate** is green: 127 tests.
+- **The offline gate** is green: 128 tests (2026-09-30).
 - **Proven for real:**
   - `build-transcript`: parity with the Python `align` on all 9 real sessions; the only
     differences are 77 whisper fixes.
@@ -129,10 +129,21 @@ What it proved:
 
 **Needs the owner's restart of the `scribe` server:** items 1, 2 and 4 changed `dist/`.
 
+## Landed: fighting styles in the combat stats (2026-09-26, d523366)
+
+The scan reads Battle Flow's `fightingStyle` record and tallies it per attacker: rolls changed
+and the damage each style added (Great Weapon Fighting's raised dice, Dueling's and Thrown's +2,
+Two-Weapon's modifier). An entry that added nothing is skipped. The report line reads
+"fighting styles: Great Weapon Fighting x2 (+5 dmg)". The damage itself was already in `dealt`
+through the receipt; `gain` says how much of it the style was.
+
+**Changed `dist/`** (rebuilt with the commit). If the `scribe` server has not been restarted
+since 2026-09-26 08:58, session 9's combat log will lack the line: `scribe-status` before the
+run, and ask the owner for a restart if the report has no fighting styles.
+
 ## 1 · Before session 9: what is left
 
-- Nothing. The scribe's server runs the new `dist/` (restarted 2026-09-24) and Battle Flow
-  v2.0.7 is on prod. Session 9 is next: paste the Craig link.
+- Only the restart check above. Battle Flow v2.0.7 is on prod. Session 9 is next: paste the Craig link.
 
 ## 2 · Session 9 (the finale)
 
