@@ -137,18 +137,19 @@ Two-Weapon's modifier). An entry that added nothing is skipped. The report line 
 "fighting styles: Great Weapon Fighting x2 (+5 dmg)". The damage itself was already in `dealt`
 through the receipt; `gain` says how much of it the style was.
 
-**Changed `dist/`** (rebuilt with the commit). If the `scribe` server has not been restarted
-since 2026-09-26 08:58, session 9's combat log will lack the line: `scribe-status` before the
-run, and ask the owner for a restart if the report has no fighting styles.
+**Changed `dist/`** (rebuilt with the commit). Session 9's combat log was produced after it.
 
-## 1 · Before session 9: what is left
+## Landed: session 9, the finale (2026-09-29)
 
-- Only the restart check above. Battle Flow v2.0.7 is on prod. Session 9 is next: paste the Craig link.
+Processed end to end in the campaign repo's own session, not here: `fvtt-campaign-greenrest`
+f70347a ("session: 2026-09-29 — The Heart Knot (the finale)"). The four documents as HTML and
+PDF, nine illustrations, transcript, chat log, combat stats, the end-of-campaign party snapshot,
+and the Session Diary page in the world.
 
-## 2 · Session 9 (the finale)
+## What is left
 
-When the owner pastes the link, run the skill end to end as in the replay. Check canon against the
-live sheets before writing: the replay's first draft said two hearts, and the party holds all four.
+- Nothing. The campaign has concluded (owner, 2026-09-30: "we are done"). The app stays as it is
+  for the next campaign; the record layout and the campaign-repo contract are unchanged.
 
 ## Things learned the hard way
 
