@@ -8,7 +8,8 @@ PDF), a combat report, GM notes and a party snapshot into your campaign repo.
 
 [Claude Code](https://claude.com/claude-code) drives it. The app runs as an
 [MCP](https://modelcontextprotocol.io) server named `scribe`, and its `session-scribe` skill runs
-the pipeline.
+the pipeline. Technically it is an MCP server; it is an app because it does the whole job end to
+end, where its `fvtt-mcp-*` siblings are general bridges to Foundry's API.
 
 It **reads the world and never writes it**. The session-diary page goes in through the sibling
 [`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e).
