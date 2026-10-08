@@ -66,6 +66,18 @@ The tools handle correctness and the skill handles judgment: the recap's voice, 
 matter, and the illustrations, which it makes with
 [`fvtt-mcp-imagegen`](https://github.com/Txpple/fvtt-mcp-imagegen)'s `illustration-builder`.
 
+**The illustrations.** When `campaign.json` turns them on, the recap comes back illustrated:
+eight or nine plates a session, one for about every story section, the quiet town moments as
+much as the big fight. Each one is grounded before it is prompted: who was there and where it
+happened are checked against the transcript, the scene's battlemap gives the terrain, and the
+party's faces come from the campaign's art shelf (`art/SHELF.md`), one approved portrait per
+player character with the phrase that binds it in a prompt, plus a few finished pieces that
+carry the house look. That shelf is why the same people walk through every recap, week after
+week, and why a book assembled at the end of a campaign reads as one artist's work. Every plate
+is looked at before it is kept, and the finals go to the campaign repo with 1600-px copies in
+the session's `img/`, captioned in-world in both the web and the print recap. The two Greenrest
+records below show the result.
+
 ## Tools
 
 | Tool | Does |
