@@ -1,18 +1,18 @@
 # fvtt-mcp-sessionscribe
 
-An app that turns a night at a **D&D 5e** [Foundry VTT](https://foundryvtt.com) table into its
-session record. It reads four inputs: the [Craig](https://craig.chat) recording from Discord, the
-Foundry chat log, [Battle Flow](https://github.com/Txpple/fvtt-mod-battleflow)'s combat stats and
-the party's sheets. From them it writes a speaker-labelled transcript, a player recap (email and
-PDF), a combat report, GM notes and a party snapshot into your campaign repo.
+[![CI](https://github.com/Txpple/fvtt-mcp-sessionscribe/actions/workflows/ci.yml/badge.svg)](https://github.com/Txpple/fvtt-mcp-sessionscribe/actions/workflows/ci.yml)
 
-[Claude Code](https://claude.com/claude-code) drives it. The app runs as an
-[MCP](https://modelcontextprotocol.io) server named `scribe`, and its `session-scribe` skill runs
-the pipeline. Technically it is an MCP server; it is an app because it does the whole job end to
-end, where its `fvtt-mcp-*` siblings are general bridges to Foundry's API.
+An [MCP](https://modelcontextprotocol.io) server that turns a night at a **D&D 5e**
+[Foundry VTT](https://foundryvtt.com) table into its session record. It reads four inputs: the
+[Craig](https://craig.chat) recording from Discord, the Foundry chat log,
+[Battle Flow](https://github.com/Txpple/fvtt-mod-battleflow)'s combat stats and the party's
+sheets. From them it writes a speaker-labelled transcript, a player recap (email and PDF), a
+combat report, GM notes and a party snapshot into your campaign repo.
 
-It **reads the world and never writes it**. The session-diary page goes in through the sibling
-[`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e).
+[Claude Code](https://claude.com/claude-code) drives it. The server is registered as `scribe`, and
+its `session-scribe` skill runs the pipeline end to end, where
+[`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e) is a general bridge to Foundry's API.
+It **reads the world and never writes it**; the session-diary page goes in through `fvtt-mcp-dnd5e`.
 
 **At the table, the DM does four things:** `/join` Craig, play, `/stop`, and paste the link to
 Claude. There is nothing to mark, export or download. A "mark that" said aloud is found in the
@@ -64,7 +64,7 @@ pipeline in this order:
 
 The tools handle correctness and the skill handles judgment: the recap's voice, which beats
 matter, and the illustrations, which it makes with
-[`fvtt-app-artificer`](https://github.com/Txpple/fvtt-app-artificer)'s `illustration-builder`.
+[`fvtt-mcp-imagegen`](https://github.com/Txpple/fvtt-mcp-imagegen)'s `illustration-builder`.
 
 ## Tools
 
@@ -116,6 +116,30 @@ The live checks run on a sandbox only:
 CI runs the offline gate on Node 22 and 24, with `fvtt-mcp-dnd5e` checked out and built beside
 the repo. Releases are tagged and listed in [CHANGELOG.md](CHANGELOG.md).
 
+<!-- openroll5e:family -->
+## Part of Open Roll 5e
+
+fvtt-mcp-sessionscribe is one of the three MCP servers in Open Roll 5e, a suite of Foundry VTT modules and Claude
+Code tooling built for one D&D 5e table and shared. The other servers:
+
+- [fvtt-mcp-dnd5e](https://github.com/Txpple/fvtt-mcp-dnd5e): builds D&D 5e content in a live Foundry world from Claude Code: a stat block becomes a complete NPC, a map image a walled and lit scene, an adventure its journals, tables and handouts.
+- [fvtt-mcp-imagegen](https://github.com/Txpple/fvtt-mcp-imagegen): makes the art with Google's Gemini image models: icons, tokens, props, portraits, illustrations and battlemap restyles, grounded in what the world already shows.
+
+The modules, each of which installs and works on its own and none of which needs another:
+
+- [Open Roll 5e: Autoexplore](https://github.com/Txpple/fvtt-mod-autoexplore): lets a scene start fully explored, so the whole map shows through the fog of war while tokens still need line of sight.
+- [Open Roll 5e: Battle Flow](https://github.com/Txpple/fvtt-mod-battleflow): combat automation for dnd5e 2024 rules: a hit rolls and applies its own damage, saves resolve themselves, reactions hold, and concentration is tracked. Every rule that touches a fight in the 2024 core books, Heroes of Faerûn, Arcana Unleashed and Ravenloft: The Horrors Within.
+- [Open Roll 5e: Combat Plus](https://github.com/Txpple/fvtt-mod-combatplus): automates the chores of running a fight: combat music, an initiative gate, an out-of-turn movement block, defeated marking at 0 HP and turn alerts.
+- [Open Roll 5e: Errata](https://github.com/Txpple/fvtt-mod-errata5e): corrects, in memory, bugs in the premium D&D 2024 books, the dnd5e system and Foundry itself, each fix held until the vendor ships its own.
+- [Open Roll 5e: FX Studio](https://github.com/Txpple/fvtt-mod-fxstudio): visual and sound effects for dnd5e, played from what actually happened at the table, with about a thousand stock FX and a window for authoring your own.
+- [Open Roll 5e: Loot Shelf](https://github.com/Txpple/fvtt-mod-lootshelf): loot chests and merchant shelves that players can take from, buy from and sell to without owning them, with a receipt for every trade.
+- [Open Roll 5e: Open Server](https://github.com/Txpple/fvtt-mod-openserver): for hosted worlds: clears the startup pause so players can play before the GM arrives, and gives any user a landing scene of their own.
+- [Open Roll 5e: Party Stash](https://github.com/Txpple/fvtt-mod-partystash): makes a dnd5e Group actor's inventory a working party stash: drags move instead of copying, coin moves through a dialog, and every transfer posts a receipt.
+- [Open Roll 5e: Soundscape](https://github.com/Txpple/fvtt-mod-soundscape): background sound for scenes: random one-shots with silence between them, seamless crossfaded loops, day and night gating, and quiet during combat.
+
+How they fit together is mapped in [fvtt-suite-openroll5e](https://github.com/Txpple/fvtt-suite-openroll5e).
+<!-- /openroll5e:family -->
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
