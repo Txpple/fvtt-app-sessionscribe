@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # fvtt-mcp-sessionscribe
 
-The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an app, driven
-by Claude Code through its MCP server (registered at user scope as `scribe`) and the
-`session-scribe` skill. It reads what happened at a session and writes the session record into
+The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an MCP server
+(registered at user scope as `scribe`), driven by Claude Code through the `session-scribe`
+skill. It reads what happened at a session and writes the session record into
 the campaign repo:
 - **Inputs:** the Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the
   party's sheets.
@@ -15,8 +15,10 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-09-30).** Released as **1.0.0**; the campaign it was built for concluded with
-session 9 (2026-09-29), and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
+**State (2026-10-08).** Released as **1.0.0** on 2026-09-30; renamed from `fvtt-app-sessionscribe` and
+moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign repos
+are now `../../fvtt-campaign-*`). The campaign it was built for concluded with session 9 (2026-09-29),
+and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
 handoff's history and the hard-won lessons; [CHANGELOG.md](CHANGELOG.md) is the release record.
 Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
 #17). All eight tools and the skill have landed.
@@ -147,7 +149,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   welcome and sets a user flag. Scribe Assistant's first prod join did this (2026-09-24 01:19Z).
   It happens once per user per world, so `verify-reader` can't see it after the first time.
 
-## Family conventions (from the sister repos)
+## Family conventions (shared across Open Roll 5e)
 
 - Node ≥ 22, ESM, biome, `tsc`, vitest, knip. Tests run on fakes: injected HTTP, exec and world
   reader; never live APIs.
@@ -155,7 +157,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   are memorable, curation) stays in the skill.
 - Commit directly to `main` and push. MIT license, author Txpple. The remote is
   `Txpple/fvtt-mcp-sessionscribe`, **public** since 2026-09-24 (the owner's call), like the
-  tool siblings.
+  rest of Open Roll 5e. Issues from outside are accepted; pull requests are not.
 
 ## Machine gotchas (Windows)
 

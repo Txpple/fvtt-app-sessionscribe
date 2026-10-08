@@ -92,6 +92,10 @@ The record goes into the campaign repo, under `sessions/YYYY-MM-DD/` and `party-
 The audio, the job logs and the page previews stay in the session's `audio/`, which is
 gitignored. The Craig key is never saved.
 
+Two complete records from the campaign the scribe was proven on, sessions 8 and 9 of *The Broken
+Heart of Greenrest*, are published as examples in the suite repo:
+[docs/examples/session-scribe](https://github.com/Txpple/fvtt-suite-openroll5e/tree/main/docs/examples/session-scribe).
+
 ## How it works
 
 - **Joining Foundry.** Each Foundry read runs in its own child process through `fvtt-mcp-dnd5e`'s
@@ -137,7 +141,8 @@ The modules, each of which installs and works on its own and none of which needs
 - [Open Roll 5e: Party Stash](https://github.com/Txpple/fvtt-mod-partystash): makes a dnd5e Group actor's inventory a working party stash: drags move instead of copying, coin moves through a dialog, and every transfer posts a receipt.
 - [Open Roll 5e: Soundscape](https://github.com/Txpple/fvtt-mod-soundscape): background sound for scenes: random one-shots with silence between them, seamless crossfaded loops, day and night gating, and quiet during combat.
 
-How they fit together is mapped in [fvtt-suite-openroll5e](https://github.com/Txpple/fvtt-suite-openroll5e).
+Issues are welcome on every repo in the family; pull requests are not accepted, since each is one
+author's design for one table, shared because it might suit yours. How they fit together is mapped in [fvtt-suite-openroll5e](https://github.com/Txpple/fvtt-suite-openroll5e).
 <!-- /openroll5e:family -->
 
 ## License
