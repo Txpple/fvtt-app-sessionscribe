@@ -39,7 +39,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
     exporters.
 - **Doc pointers landed:**
   - Battle Flow 863a1f4 (`ARCHITECTURE.md` §4, `DESIGN.md`).
-  - The campaign repo 39ed5ca: `sessions/README.md`, `STYLE.md` and three notes. The DESKTOP-NY
+  - The campaign repo 39ed5ca: `sessions/README.md`, `STYLE.md` and three notes. The desktop machine's
     auto-sync committed those edits as "notes sync" before I could; the content is ours.
 - **Proven on prod (2026-09-23 21:19, after the owner's restart):**
   - `scribe-status { connect: true }` joined as Scribe Assistant (role 3), the only GM and so the
@@ -182,5 +182,5 @@ and the Session Diary page in the world.
 - **The MCP's scripts need `FOUNDRY_HOST`,** even ones that never touch a world
   (`verify-toolsets`). Unset means `generic`, whose placeholder URL makes the server refuse to
   start.
-- **The campaign repo auto-syncs** (DESKTOP-NY "notes sync" commits). Uncommitted edits there
+- **The campaign repo auto-syncs** (the "notes sync" commits from the session hooks). Uncommitted edits there
   get swept into a generic commit, so commit promptly with a real message.

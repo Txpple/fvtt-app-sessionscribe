@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Single source of truth → advertised contract (inherited verbatim from fvtt-mcp-dnd5e, as the artificer does).
+ * Single source of truth → advertised contract (inherited verbatim from fvtt-mcp-dnd5e, as imagegen does).
  *
  * Each tool declares its input contract ONCE as a zod schema (used by the handler to
  * parse/validate); this helper derives the advertised JSON Schema from that same schema, so the

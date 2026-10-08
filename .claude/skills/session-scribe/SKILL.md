@@ -38,7 +38,7 @@ writes to Foundry.
 | `render-pdf` | The outputs' HTML → PDFs (recap.pdf from recap-print.html), page counts, every page as a JPEG to look at. |
 
 Writes to the world stay with `fvtt-mcp-dnd5e`: the session-diary page (`manage-journals`) and the
-Bestiary (its `bestiary-builder` skill). Illustrations are the artificer's `illustration-builder`
+Bestiary (its `bestiary-builder` skill). Illustrations are imagegen's `illustration-builder`
 skill. When a sibling skill is not loaded, read its SKILL.md by path: the sibling repos sit
 beside this one (`<repos>/fvtt-mcp-dnd5e/.claude/skills/bestiary-builder/`,
 `<repos>/fvtt-mcp-imagegen/.claude/skills/illustration-builder/`).

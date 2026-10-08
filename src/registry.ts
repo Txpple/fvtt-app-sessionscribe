@@ -1,5 +1,5 @@
 // The tool registry: the single place tool names, definitions and handlers are wired together
-// (the family pattern, from fvtt-mcp-dnd5e by way of the artificer). The `handlers` map is the
+// (the family pattern, from fvtt-mcp-dnd5e by way of imagegen). The `handlers` map is the
 // source of truth; the advertised `tools` list is DERIVED from it, so the two cannot drift, and a
 // handler without a matching definition fails fast at startup.
 
