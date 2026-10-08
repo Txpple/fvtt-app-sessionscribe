@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# fvtt-app-sessionscribe
+# fvtt-mcp-sessionscribe
 
 The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an app, driven
 by Claude Code through its MCP server (registered at user scope as `scribe`) and the
@@ -154,7 +154,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - **Tools do, skills decide.** Correctness goes in tested code; judgment (recap voice, which beats
   are memorable, curation) stays in the skill.
 - Commit directly to `main` and push. MIT license, author Txpple. The remote is
-  `Txpple/fvtt-app-sessionscribe`, **public** since 2026-09-24 (the owner's call), like the
+  `Txpple/fvtt-mcp-sessionscribe`, **public** since 2026-09-24 (the owner's call), like the
   tool siblings.
 
 ## Machine gotchas (Windows)

@@ -1,4 +1,4 @@
-# fvtt-app-sessionscribe machine bootstrap (the transcription toolchain): idempotent, safe to
+# fvtt-mcp-sessionscribe machine bootstrap (the transcription toolchain): idempotent, safe to
 # re-run. Installs ffmpeg + uv (winget), builds the ~\.session-scribe venv (Python 3.12+,
 # faster-whisper + NVIDIA CUDA wheels), generates a TTS test clip, runs the smoke test.
 # Usage:  powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 [-PrefetchModel]

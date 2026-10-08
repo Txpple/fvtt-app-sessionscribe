@@ -33,6 +33,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(err => {
-  console.error('fvtt-app-sessionscribe failed to start:', err);
+  console.error('fvtt-mcp-sessionscribe failed to start:', err);
   process.exit(1);
 });

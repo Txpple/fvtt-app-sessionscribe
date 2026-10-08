@@ -3,7 +3,7 @@ name: session-scribe
 description: >-
   Turn a Craig (Discord) session recording and the Foundry chat log into the session record in the
   campaign repo: speaker-labeled transcript, player recap, combat report, GM notes, party snapshot,
-  with the scribe's tools (fvtt-app-sessionscribe). Use when the user pastes a Craig download link
+  with the scribe's tools (fvtt-mcp-sessionscribe). Use when the user pastes a Craig download link
   (craig.chat/rec/... or craig.horse), or wants to "process the session", "process last night's
   recording", "transcribe the session", "write the session recap", "make the session log",
   "analyze the combat", or "run session scribe".
@@ -22,7 +22,7 @@ aloud during play, it is IN the transcript: grep for it.
 
 ## The tools
 
-The scribe MCP server (`fvtt-app-sessionscribe`, registered as `scribe`) does the correctness;
+The scribe MCP server (`fvtt-mcp-sessionscribe`, registered as `scribe`) does the correctness;
 this skill does the judgment. The scribe **reads** the world and **writes the record**; it never
 writes to Foundry.
 

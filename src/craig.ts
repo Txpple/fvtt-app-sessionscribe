@@ -144,7 +144,7 @@ export class CraigHttpError extends Error {
   }
 }
 
-const UA = { 'User-Agent': 'fvtt-app-sessionscribe (personal D&D recap pipeline)' };
+const UA = { 'User-Agent': 'fvtt-mcp-sessionscribe (personal D&D recap pipeline)' };
 const REQUEST_TIMEOUT_MS = 60_000;
 
 export class CraigClient {

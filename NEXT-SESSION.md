@@ -8,7 +8,7 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
 
 ## Where things stand
 
-- **Built, on `main`, pushed** (`Txpple/fvtt-app-sessionscribe`, public since 2026-09-24):
+- **Built, on `main`, pushed** (`Txpple/fvtt-mcp-sessionscribe`, public since 2026-09-24):
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
   - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.

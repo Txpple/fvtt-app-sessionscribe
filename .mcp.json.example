@@ -3,7 +3,7 @@
   "mcpServers": {
     "scribe": {
       "command": "C:/Program Files/nodejs/node.exe",
-      "args": ["D:/Workbench/FVTT/Repos/fvtt-app-sessionscribe/dist/index.js"],
+      "args": ["D:/Workbench/FVTT/Repos/fvtt-suite-openroll5e/fvtt-mcp-sessionscribe/dist/index.js"],
       "env": { "FOUNDRY_HOST": "molten" }
     }
   }

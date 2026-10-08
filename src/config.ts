@@ -52,7 +52,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
   const host = (env.FOUNDRY_HOST ?? 'molten').toLowerCase();
   const systemRoot = env.SystemRoot ?? 'C:\\Windows';
   return {
-    server: { name: 'fvtt-app-sessionscribe', version: readPackageVersion() },
+    server: { name: 'fvtt-mcp-sessionscribe', version: readPackageVersion() },
     scribeUser: env.FOUNDRY_SCRIBE_USER ?? '',
     scribePassword: env.FOUNDRY_SCRIBE_PASSWORD ?? '',
     campaignRepo: env.SCRIBE_CAMPAIGN_REPO ? expandPath(env.SCRIBE_CAMPAIGN_REPO, env) : '',

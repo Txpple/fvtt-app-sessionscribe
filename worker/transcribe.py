@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """transcribe.py: the scribe's one Python step, per-track faster-whisper with VAD.
 
-Run as a detached job by fvtt-app-sessionscribe's transcribe-recording tool (src/jobs.ts), with
+Run as a detached job by fvtt-mcp-sessionscribe's transcribe-recording tool (src/jobs.ts), with
 the transcription venv's interpreter (scripts/setup.ps1 builds it):
 
   transcribe --session-dir D [--model M] [--device auto|cuda|cpu] [--language en] [--fresh]

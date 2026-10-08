@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          path: fvtt-app-sessionscribe
+          path: fvtt-mcp-sessionscribe
 
       - uses: actions/checkout@v7
         with:
@@ -42,25 +42,25 @@ jobs:
           npm run build
 
       - name: Install
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm ci
 
       - name: Build (tsc + page bundle)
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm run build
 
       - name: Format + lint (biome)
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm run check
 
       - name: Typecheck
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm run typecheck
 
       - name: Dead-code check (knip)
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm run knip
 
       - name: Unit tests
-        working-directory: fvtt-app-sessionscribe
+        working-directory: fvtt-mcp-sessionscribe
         run: npm test

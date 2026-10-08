@@ -1,4 +1,4 @@
-# fvtt-app-sessionscribe
+# fvtt-mcp-sessionscribe
 
 An app that turns a night at a **D&D 5e** [Foundry VTT](https://foundryvtt.com) table into its
 session record. It reads four inputs: the [Craig](https://craig.chat) recording from Discord, the
@@ -21,10 +21,10 @@ transcript.
 ## Setup
 
 ```bash
-git clone https://github.com/Txpple/fvtt-app-sessionscribe && cd fvtt-app-sessionscribe
+git clone https://github.com/Txpple/fvtt-mcp-sessionscribe && cd fvtt-mcp-sessionscribe
 npm install && npm run build      # fvtt-mcp-dnd5e must be cloned beside this repo and built first
 cp .env.example .env              # FOUNDRY_SCRIBE_USER / FOUNDRY_SCRIBE_PASSWORD, SCRIBE_CAMPAIGN_REPO
-claude mcp add -s user scribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-app-sessionscribe/dist/index.js
+claude mcp add -s user scribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
 ```
 
 Then, once per machine:
