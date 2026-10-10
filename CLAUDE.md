@@ -45,6 +45,8 @@ npm run build               # scripts/prebuild.mjs (is fvtt-mcp-dnd5e built?), t
 npm test                    # vitest, offline (src/**/*.test.ts)
 npx vitest run src/transcript/align.test.ts   # one file; add -t "<name>" for one test
 npm run check && npm run typecheck && npm test && npm run build && npm run knip   # the gate
+FOUNDRY_HOST=local npm run doctor   # the setup, one ✓/✗/! line each (src/doctor.ts); joins once, read-only: a world-driver
+npm run install-skill               # (re)links the skill into ~/.claude/skills; never clobbers a real folder
 node scripts/call.mjs <tool> '<json>'   # one tool through a fresh dist/index.js; SCRIBE_CAMPAIGN_REPO / FOUNDRY_HOST in the env reach it
 FOUNDRY_HOST=local node scripts/verify-reader.mjs   # sandbox only: the reader leaves no trace
 FOUNDRY_HOST=local node scripts/parity-chat.mjs     # sandbox only: vs the MCP's export-chat-log (also parity-snapshot)
@@ -111,8 +113,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   multiplier − the post-trait part. Battle Flow's `traits[]` label is not consulted (it misreads
   dnd5e's combined multiplier on a halved save).
 
-**The skill:** `.claude/skills/session-scribe/`, with its templates. It is junctioned to
-`~/.claude/skills/session-scribe`, so it loads in any project.
+**The skill:** `.claude/skills/session-scribe/`, with its templates. `npm run install-skill`
+junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
 
 **Test fixtures are synthetic** (`src/testing/`). No campaign fact belongs in this repo.
 

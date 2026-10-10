@@ -2,6 +2,25 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
+## Unreleased
+
+- **`npm run doctor`** checks the whole setup in one pass, one line per check (✓ works, ✗ blocks
+  a session and says the fix, ! worth knowing), and exits non-zero on any ✗:
+  `fvtt-mcp-dnd5e` built; its `.env` found (`FVTT_MCP_ENV` respected); `FOUNDRY_HOST`'s server
+  up with a world running; a real, read-only join as `FOUNDRY_SCRIBE_USER` (through the same
+  reader child every tool uses) with its role; `campaign.json` valid and naming the joined world;
+  Edge; the skill link; and, as `!` only, the Python venv and ffmpeg. (#2)
+- **`npm run install-skill`** links the `session-scribe` skill into `~/.claude/skills/` (a
+  junction on Windows, a symlink elsewhere). Rerunning it is safe: a link already pointing here
+  is kept, a stale one left by a moved clone is replaced, and a real folder there is never
+  touched. It replaces the README's hand-typed `New-Item -ItemType Junction`. (#2)
+- README: which tools need the transcription toolchain (only `transcribe-recording`) and which
+  need Foundry, Edge or nothing, so a machine can be set up in stages. (#2)
+- `npm ci` no longer warns about install scripts: `package.json`'s `allowScripts` approves
+  esbuild's `postinstall`, which only checks the platform binary esbuild ships with. It is
+  approved by name, not pinned to a version, since two copies are in the tree (this repo's
+  build and vitest's vite) and they move with every dependency bump. (#2)
+
 ## 1.1.0 — 2026-10-10 — the server key is sessionscribe; setup fails fast
 
 - **The server key is `sessionscribe`** (was `scribe`), the repo's name part, as

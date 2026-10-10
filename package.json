@@ -19,7 +19,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "knip": "knip",
-    "build:page": "node esbuild.page.mjs"
+    "build:page": "node esbuild.page.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "install-skill": "node scripts/install-skill.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -49,5 +51,8 @@
     "session-recap",
     "tabletop",
     "rpg"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild": true
+  }
 }

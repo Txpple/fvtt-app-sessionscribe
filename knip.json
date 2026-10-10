@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/page/index.ts", "src/workers/*.ts"],
+  "entry": ["src/page/index.ts", "src/workers/*.ts", "src/doctor.ts"],
   "project": ["src/**/*.ts"],
   "ignoreExportsUsedInFile": true,
   "ignoreDependencies": ["fvtt-mcp-dnd5e"]

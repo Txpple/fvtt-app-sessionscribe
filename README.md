@@ -47,16 +47,40 @@ claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node /absolute/pa
 
 Then, once per machine:
 
-- **Transcription toolchain.** Run `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel`.
-  It installs ffmpeg, builds a Python venv with faster-whisper and the CUDA wheels, and runs a
-  smoke test. It is idempotent.
-- **The skill, in every project.** From the repo root in PowerShell, run
-  `New-Item -ItemType Junction -Path "$HOME\.claude\skills\session-scribe" -Target "$PWD\.claude\skills\session-scribe"`.
+- **The skill, in every project.** Run `npm run install-skill`. It links
+  `.claude/skills/session-scribe` into `~/.claude/skills/` (a junction on Windows, a symlink
+  elsewhere), so a `git pull` here updates it. Rerunning it is safe: a link already pointing here
+  is kept, a stale one (a moved clone) is replaced, and a real folder there is never touched.
 - **The scribe's own Foundry user.** Create an Assistant GM user (default `Scribe Assistant`).
   Don't reuse the MCP's user: two clients on one user double Battle Flow's automation. If
   `FOUNDRY_SCRIBE_USER` names no user in the world, a read fails at the join, naming it and
   listing the world's users.
+- **Check it all:** `npm run doctor` (add `FOUNDRY_HOST=local` for a local Foundry). It prints
+  one line per check: ✓ works, ✗ blocks a session (with the fix), ! worth knowing. It exits
+  non-zero on any ✗. It covers `fvtt-mcp-dnd5e`'s build and `.env` (`FVTT_MCP_ENV` respected),
+  the Foundry server, a real join as `FOUNDRY_SCRIBE_USER` with its role, the campaign repo and
+  its world, Edge, the skill link and the transcription toolchain. The join is read-only and
+  hangs up before the doctor exits.
+- **Transcription toolchain** (optional at first, see below). Run
+  `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel`. It installs
+  ffmpeg and uv, builds a Python venv (`~/.session-scribe/venv`) with faster-whisper and the CUDA
+  wheels, and runs a smoke test. It is idempotent.
 - **Restart Claude Code** and ask for `scribe-status`, which reports anything missing.
+
+**Staging the setup.** Only `transcribe-recording` needs the transcription toolchain (ffmpeg,
+uv and the faster-whisper venv from `setup.ps1`); the doctor marks it `!`, not `✗`. Everything
+else works without it:
+
+| Needs | Tools |
+| --- | --- |
+| nothing but the campaign repo | `scribe-status`, `build-transcript` (from the session's `craig-info.json`, `transcript-segments.json` and, optionally, `chatlog.json`) |
+| Windows' own `tar.exe` and the network | `fetch-recording` |
+| the transcription toolchain | `transcribe-recording` |
+| Foundry: `fvtt-mcp-dnd5e` built, its `.env`, the scribe's user | `export-session-chat`, `analyze-combat`, `snapshot-party` |
+| Edge, and `fvtt-mcp-dnd5e`'s Playwright Chromium for the page images | `render-pdf` |
+
+So a machine can produce the chat export, the combat report, the party snapshot and the PDFs
+before the GPU side is set up, and add transcription later.
 
 `FOUNDRY_HOST` is `molten` (a hosted world) or `local` (a Foundry on this machine). It sets the
 default host for reads, and each read tool can override it per call. The host URLs come from `fvtt-mcp-dnd5e`'s `.env`, not this repo's.
@@ -144,6 +168,9 @@ Heart of Greenrest*, are published as examples in the suite repo:
 The offline gate is `npm run check && npm run typecheck && npm test && npm run build && npm run knip`.
 The tests run on fakes, never on live APIs. `node scripts/call.mjs <tool> '<json>'` runs one tool
 through a fresh `dist/index.js`.
+`package.json`'s `allowScripts` approves the one install script in the tree, esbuild's
+`postinstall` (it checks the platform binary it ships with), so `npm ci` runs quietly and warns
+only about a new one.
 
 The live checks run on a sandbox only:
 - `FOUNDRY_HOST=local node scripts/verify-reader.mjs` proves that the reader leaves no trace.
