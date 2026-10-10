@@ -81,7 +81,7 @@ describe('doctor', () => {
     try {
       const error =
         "FOUNDRY_SCRIBE_USER 'Nobody' not found in the world on host 'local'; users: Gamemaster, " +
-        'Scribe Assistant — create it as an Assistant GM, or set FOUNDRY_SCRIBE_USER to an existing one';
+        'Scribe Assistant — set FOUNDRY_SCRIBE_USER to an existing Assistant GM (the bridge’s user will do), or create it as one.';
       const r = await run(root, { reader: async req => ({ ok: false, host: req.host, error }) });
       expect(r.failed).toBe(true);
       expect(r.text).toContain(`✗ ${error}`);

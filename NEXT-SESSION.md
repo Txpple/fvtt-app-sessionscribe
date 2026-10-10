@@ -51,8 +51,9 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
   step into a scratch clone of the campaign repo. The outputs are on the owner's Desktop (`Greenrest
   Session 8 (replay)`, with `REVIEW.md`). Details are below.
 - **Owner rulings in force (2026-09-23):**
-  - The scribe logs in as its own **Scribe Assistant** (Assistant GM) user. It exists on prod and
-    the sandbox, and the password is in `.env`.
+  - The scribe logs in as the bridge's own Assistant GM user (owner ruling 2026-10-10, replacing
+    the separate Scribe Assistant user of 2026-09-23): `FOUNDRY_SCRIBE_USER` /
+    `FOUNDRY_SCRIBE_PASSWORD` in `.env` carry the bridge's login. See CLAUDE.md for why it is safe.
   - **`export-chat-log` stays in the MCP** as the general exporter.
 
 **Before any sandbox run:**

@@ -2,6 +2,22 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
+## Unreleased
+
+- **The scribe may join as the `fvtt-mcp-dnd5e` bridge's own Assistant GM user**, and on the
+  house worlds does (owner ruling, 2026-10-10, to stop user bloat): set `FOUNDRY_SCRIBE_USER` /
+  `FOUNDRY_SCRIBE_PASSWORD` to the bridge's `FOUNDRY_USER` / `FOUNDRY_PASSWORD`. A separate
+  Assistant GM user still works; both keys stay required. The "never the bridge's user" rule is
+  gone from the docs and from the not-in-the-world message, whose fix now reads `set
+  FOUNDRY_SCRIBE_USER to an existing Assistant GM (the bridge's user will do), or create it as
+  one`. Why it is safe: Battle Flow's single-applier check (`game.users.activeGM?.isSelf`) is
+  per user, so two clients on one user would both apply only while that user is the elected GM;
+  Foundry elects the highest-role active GM, so with the DM connected as Gamemaster the
+  Assistant GM is never elected, and the reader already refuses a read when its user is the
+  elected GM while a combat runs. Verified on the sandbox: the scribe joined as the bridge's
+  user while the bridge was connected, hung up, and the bridge stayed connected.
+  `.env.example` now shows `Assistant DM` (the bridge's user) instead of `Scribe Assistant`.
+
 ## 1.2.0 — 2026-10-10 — npm run doctor and npm run install-skill
 
 - **`npm run doctor`** checks the whole setup in one pass, one line per check (✓ works, ✗ blocks

@@ -1,8 +1,8 @@
 // A connection to Foundry as the scribe, for the reader child and the live parity scripts ONLY.
 // The server never imports this module (it would hold a browser); it spawns the reader instead.
 //
-// Joins as the scribe's own user, never the MCP bridge's (two clients on one user double Battle
-// Flow's automation), with the ADMIN KEY STRIPPED: it can wake a sleeping host, never launch a
+// Joins as FOUNDRY_SCRIBE_USER (the bridge's own Assistant GM user, or a separate one), with the
+// ADMIN KEY STRIPPED: it can wake a sleeping host, never launch a
 // world. Injects window.__scribe the way fvtt-mcp-dnd5e injects its own bundle (an inline script
 // element), beside the MCP's window.__fvtt, which the parity scripts compare against.
 

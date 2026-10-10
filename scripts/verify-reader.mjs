@@ -1,6 +1,6 @@
 // VERIFY: the reader's live gate (M3). SANDBOX ONLY (FOUNDRY_HOST=local), READ-ONLY, one
 // world-driver at a time: check `node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status` and that
-// no suite is running first. Needs `npm run build` and the Scribe Assistant login in .env.
+// no suite is running first. Needs `npm run build` and the FOUNDRY_SCRIBE_USER login in .env.
 //
 //   1. A read through the REAL path (server-side childReader → dist/workers/foundry-read.js)
 //      answers, and afterwards no scribe user is left connected (the sandbox's user count is back

@@ -77,8 +77,8 @@ export function scribeUserMissing(
   return (
     `FOUNDRY_SCRIBE_USER '${ctx.user}' not found in ${where}` +
     (users.length ? `; users: ${users.join(', ')}` : '') +
-    ' — create it as an Assistant GM, or set FOUNDRY_SCRIBE_USER to an existing one ' +
-    '(never the bridge’s user).'
+    ' — set FOUNDRY_SCRIBE_USER to an existing Assistant GM (the bridge’s user will do), ' +
+    'or create it as one.'
   );
 }
 

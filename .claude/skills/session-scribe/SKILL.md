@@ -74,8 +74,8 @@ Python from python.org (`winget install Python.Python.3.13`), delete `~\.session
 re-run setup.ps1 (it prefers the newest signed 3.12+). Never touch the policy itself. Delete any
 `~\.session-scribe\venv-blocked-*` backups once the rebuilt venv passes.
 
-The scribe joins Foundry as its own Assistant GM user (`FOUNDRY_SCRIBE_USER`, never the MCP
-bridge's). The world must be running: wake it with fvtt-mcp-dnd5e's `start-session` skill.
+The scribe joins Foundry as the Assistant GM user in `FOUNDRY_SCRIBE_USER` (the MCP bridge's
+own user, or a separate one). The world must be running: wake it with fvtt-mcp-dnd5e's `start-session` skill.
 
 ## The pipeline (per session)
 

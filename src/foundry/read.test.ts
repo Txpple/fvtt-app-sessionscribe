@@ -49,23 +49,23 @@ describe('scribeUserMissing', () => {
     );
     expect(msg).toBe(
       "FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in world 'lost-mine'; users: " +
-        'Gamemaster, MCP-Claude, Aria — create it as an Assistant GM, or set ' +
-        'FOUNDRY_SCRIBE_USER to an existing one (never the bridge’s user).'
+        'Gamemaster, MCP-Claude, Aria — set FOUNDRY_SCRIBE_USER to an existing Assistant GM ' +
+        '(the bridge’s user will do), or create it as one.'
     );
   });
 
   it('takes a reworded client error, with or without a list', () => {
     expect(
       scribeUserMissing("user 'Scribe Assistant' not found in world 'x'; users: A, B", ctx)
-    ).toMatch(/not found in the world on host 'local'; users: A, B — create it/);
+    ).toMatch(/not found in the world on host 'local'; users: A, B — set FOUNDRY_SCRIBE_USER/);
     expect(
       scribeUserMissing(
         "user 'Scribe Assistant' not found in world 'x'; users: A, B — set FOUNDRY_USER to an existing Gamemaster/Assistant GM user or create 'Scribe Assistant' in the world",
         ctx
       )
-    ).toMatch(/; users: A, B — create it as an Assistant GM/);
+    ).toMatch(/; users: A, B — set FOUNDRY_SCRIBE_USER to an existing Assistant GM/);
     expect(scribeUserMissing('The user "Scribe Assistant" does not exist', ctx)).toMatch(
-      /^FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in the world on host 'local' — create/
+      /^FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in the world on host 'local' — set FOUNDRY_SCRIBE_USER/
     );
   });
 

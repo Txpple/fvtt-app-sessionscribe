@@ -30,7 +30,8 @@ Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisi
     replayed end to end on prod into a scratch clone).
   - transcribe-recording: on CUDA, resume included.
   - render-pdf: 2026-09-22's four PDFs, and their page images (2026-09-24).
-- **Proven live on the sandbox, as Scribe Assistant:**
+- **Proven live on the sandbox, as Scribe Assistant** (a separate user then; the scribe joins as
+  the bridge's user since 2026-10-10):
   - the reader's gate `scripts/verify-reader.mjs`;
   - parity with the MCP for analyze-combat, export-session-chat and snapshot-party.
 - **Retired:** the MCP's copies went in `fvtt-mcp-dnd5e` 4.0.0 (`get-combat-stats`, the
@@ -80,13 +81,22 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - `src/foundry/read.ts` spawns `src/workers/foundry-read.ts` per read: request on stdin, one
   sentinel-prefixed reply line on stdout, killed after its watchdog.
 - The worker uses `src/foundry/session.ts`, shared with the parity scripts:
-  - It joins as **Scribe Assistant** (never the MCP bridge's user: two clients on one user double
-    Battle Flow's automation), with the admin key stripped. The join is `fvtt-mcp-dnd5e`'s
-    client; when it fails on a user not in the world, `protocol.scribeUserMissing()` rewrites
-    the error to name `FOUNDRY_SCRIBE_USER`, list the world's users and say the fix.
+  - It joins as `FOUNDRY_SCRIBE_USER` / `FOUNDRY_SCRIBE_PASSWORD` (both required), with the
+    admin key stripped. On the house worlds that is the bridge's own Assistant GM user
+    (`Assistant DM`), by owner ruling 2026-10-10, to stop user bloat; a separate Assistant GM
+    user also works. Why sharing is safe: Battle Flow's single-applier check is
+    `game.users.activeGM?.isSelf`, per user, so two clients on one user would both apply, but
+    only while that user is the elected GM. Foundry elects the highest-role active GM, so with
+    the DM (Gamemaster) connected the Assistant GM user is never elected, and
+    `protocol.refusal()` refuses a read when the joined user is the elected GM while a combat
+    runs, which covers the bridge too. Verified on the sandbox 2026-10-10: the scribe joined as
+    the bridge's user while the bridge was connected, hung up, and the bridge stayed connected.
+  - The join is `fvtt-mcp-dnd5e`'s client; when it fails on a user not in the world,
+    `protocol.scribeUserMissing()` rewrites the error to name `FOUNDRY_SCRIBE_USER`, list the
+    world's users and say the fix.
   - It injects `dist/page.bundle.js` as `window.__scribe`.
   - It probes the world, and `protocol.refusal()` refuses another world, a login below Assistant
-    GM, or the scribe being the elected GM while a combat runs.
+    GM, or the scribe's user being the elected GM while a combat runs.
 - The page ops (`src/page/*.ts`) are browser-only and answer JSON strings.
   - Watch for `Set`s: the JSON boundary flattens them to `{}`.
 
@@ -145,7 +155,7 @@ junctions it to `~/.claude/skills/session-scribe`, so it loads in any project.
   - check `node ../fvtt-mcp-dnd5e/scripts/local-foundry.mjs status`;
   - check that no Battle Flow suite (`tools/*.mjs`) is running.
   - Other sessions run those suites as Tester Assistant. The scribe must never borrow that
-    identity.
+    identity (the bridge's user is fine; Tester Assistant is not).
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point
   `SCRIBE_CAMPAIGN_REPO` at it), never the real one.
   - The running `sessionscribe` server can't be re-pointed without a restart. Instead, drive a

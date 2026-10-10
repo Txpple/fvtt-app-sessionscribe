@@ -51,8 +51,12 @@ Then, once per machine:
   `.claude/skills/session-scribe` into `~/.claude/skills/` (a junction on Windows, a symlink
   elsewhere), so a `git pull` here updates it. Rerunning it is safe: a link already pointing here
   is kept, a stale one (a moved clone) is replaced, and a real folder there is never touched.
-- **The scribe's own Foundry user.** Create an Assistant GM user (default `Scribe Assistant`).
-  Don't reuse the MCP's user: two clients on one user double Battle Flow's automation. If
+- **The scribe's Foundry user.** `FOUNDRY_SCRIBE_USER` / `FOUNDRY_SCRIBE_PASSWORD` name an
+  Assistant GM user in the world. The `fvtt-mcp-dnd5e` bridge's own Assistant GM user will do
+  (copy its `FOUNDRY_USER` / `FOUNDRY_PASSWORD`), so no extra user is needed; a separate Assistant
+  GM user works too. Sharing the bridge's user is safe while the DM is connected as Gamemaster:
+  Foundry elects the highest-role GM, so the shared user never runs Battle Flow's GM-only
+  automation, and a read is refused if the scribe's user is the elected GM during a combat. If
   `FOUNDRY_SCRIBE_USER` names no user in the world, a read fails at the join, naming it and
   listing the world's users.
 - **Check it all:** `npm run doctor` (add `FOUNDRY_HOST=local` for a local Foundry). It prints
