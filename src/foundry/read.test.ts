@@ -58,6 +58,12 @@ describe('scribeUserMissing', () => {
     expect(
       scribeUserMissing("user 'Scribe Assistant' not found in world 'x'; users: A, B", ctx)
     ).toMatch(/not found in the world on host 'local'; users: A, B — create it/);
+    expect(
+      scribeUserMissing(
+        "user 'Scribe Assistant' not found in world 'x'; users: A, B — set FOUNDRY_USER to an existing Gamemaster/Assistant GM user or create 'Scribe Assistant' in the world",
+        ctx
+      )
+    ).toMatch(/; users: A, B — create it as an Assistant GM/);
     expect(scribeUserMissing('The user "Scribe Assistant" does not exist', ctx)).toMatch(
       /^FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in the world on host 'local' — create/
     );

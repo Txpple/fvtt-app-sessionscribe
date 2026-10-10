@@ -84,7 +84,8 @@ export function scribeUserMissing(
 
 /** The user names a join error lists after "Available:" / "users:", as JSON or comma-separated. */
 function listedUsers(message: string): string[] {
-  const tail = /(?:available|users)\s*:\s*(.+)$/is.exec(message)?.[1]?.trim();
+  // the list ends at the line's end, or at the ` — <fix>` the dnd5e client appends after it
+  const tail = /(?:available|users)\s*:\s*(.+?)(?:\s+—\s|$)/is.exec(message)?.[1]?.trim();
   if (!tail) return [];
   let names: unknown;
   try {
