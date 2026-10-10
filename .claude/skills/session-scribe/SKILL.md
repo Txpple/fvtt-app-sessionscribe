@@ -22,9 +22,9 @@ aloud during play, it is IN the transcript: grep for it.
 
 ## The tools
 
-The scribe MCP server (`fvtt-mcp-sessionscribe`, registered as `scribe`) does the correctness;
-this skill does the judgment. The scribe **reads** the world and **writes the record**; it never
-writes to Foundry.
+The scribe MCP server (`fvtt-mcp-sessionscribe`, registered as `sessionscribe`, so its tools are
+`mcp__sessionscribe__*`) does the correctness; this skill does the judgment. The scribe **reads**
+the world and **writes the record**; it never writes to Foundry.
 
 | Tool | Does |
 | --- | --- |

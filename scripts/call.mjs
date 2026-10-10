@@ -1,5 +1,5 @@
 // A replay driver: run the scribe's built server (dist/index.js) as a FRESH stdio process, call
-// one tool, print its text result, exit. The registered `scribe` server reads .env once at
+// one tool, print its text result, exit. The registered `sessionscribe` server reads .env once at
 // start, so a replay that must point elsewhere (a scratch clone of the campaign repo, another
 // host) sets the variables in this process's environment and they reach the child; `dotenv`
 // never overrides a variable that is already set.

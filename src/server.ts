@@ -24,7 +24,7 @@ export function createServer(
       };
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      console.error(`[scribe] tool ${name} failed: ${message}`);
+      console.error(`[sessionscribe] tool ${name} failed: ${message}`);
       return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
     }
   });

@@ -11,7 +11,8 @@ left, in order, with its gates. Update it as you go, and delete a step's block w
 - **Built, on `main`, pushed** (`Txpple/fvtt-mcp-sessionscribe`, public since 2026-09-24):
   - All eight tools.
   - The `session-scribe` skill, junctioned to `~/.claude/skills/session-scribe`.
-  - The server, registered at user scope as `scribe` (`FOUNDRY_HOST=molten`) in `~/.claude.json`.
+  - The server, registered at user scope as `sessionscribe` (`FOUNDRY_HOST=molten`) in
+    `~/.claude.json`; it was `scribe` until 2026-10-10.
 - **The offline gate** is green: 128 tests (2026-09-30).
 - **Proven for real:**
   - `build-transcript`: parity with the Python `align` on all 9 real sessions; the only
@@ -148,8 +149,8 @@ and the Session Diary page in the world.
 
 ## What is left
 
-- Nothing. The campaign has concluded (owner, 2026-09-30: "we are done"). The app stays as it is
-  for the next campaign; the record layout and the campaign-repo contract are unchanged.
+- Nothing. The campaign has concluded (owner, 2026-09-30: "we are done"). The server stays as it
+  is for the next campaign; the record layout and the campaign-repo contract are unchanged.
 
 ## Things learned the hard way
 
@@ -177,8 +178,8 @@ and the Session Diary page in the world.
   invisible characters with `String.fromCharCode`.
 - **Vitest re-runs a test file that another test file imports.** Shared fakes live in
   `src/testing/`.
-- **The running `scribe` server reads `.env` once, at start.** A password filled in afterwards
-  needs a restart; the scripts, as fresh processes, see it at once.
+- **The running `sessionscribe` server reads `.env` once, at start.** A password filled in
+  afterwards needs a restart; the scripts, as fresh processes, see it at once.
 - **The MCP's scripts need `FOUNDRY_HOST`,** even ones that never touch a world
   (`verify-toolsets`). Unset means `generic`, whose placeholder URL makes the server refuse to
   start.

@@ -25,11 +25,11 @@ async function main(): Promise<void> {
   process.on('SIGTERM', shutdown);
   process.stdin.on('end', shutdown);
   process.on('unhandledRejection', (reason: unknown) => {
-    console.error('[scribe] unhandled rejection:', reason);
+    console.error('[sessionscribe] unhandled rejection:', reason);
   });
 
   await mcp.connect(new StdioServerTransport());
-  console.error(`[scribe] MCP server v${config.server.version} connected over stdio`);
+  console.error(`[sessionscribe] MCP server v${config.server.version} connected over stdio`);
 }
 
 main().catch(err => {

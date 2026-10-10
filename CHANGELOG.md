@@ -2,6 +2,19 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
+## Unreleased
+
+- **The server key is `sessionscribe`** (was `scribe`), the repo's name part, as
+  `fvtt-mcp-imagegen` registers as `imagegen`. Tools now appear as `mcp__sessionscribe__*`; the
+  tool names themselves (`scribe-status`, `fetch-recording`, ...) and the env names
+  (`SCRIBE_CAMPAIGN_REPO`, `FOUNDRY_SCRIBE_USER`, ...) are unchanged. **Rename your
+  registration:** `claude mcp remove -s user scribe`, then
+  `claude mcp add -s user sessionscribe ...` (or rename the `scribe` key under `mcpServers` in
+  `~/.claude.json`), and restart Claude Code. Anything that names `mcp__scribe__*` tools (a
+  permission allowlist, a campaign repo's notes) needs the same edit. Log lines read
+  `[sessionscribe]`.
+- The description says what it is: an MCP server (it was "an app" since the `fvtt-app-*` days).
+
 ## 1.0.0 — 2026-09-30 — the scribe, proven on a full campaign
 
 The first release. Everything below landed between 2026-09-23 and 2026-09-26 and was proven

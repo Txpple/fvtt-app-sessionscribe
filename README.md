@@ -9,8 +9,8 @@ An [MCP](https://modelcontextprotocol.io) server that turns a night at a **D&D 5
 sheets. From them it writes a speaker-labelled transcript, a player recap (email and PDF), a
 combat report, GM notes and a party snapshot into your campaign repo.
 
-[Claude Code](https://claude.com/claude-code) drives it. The server is registered as `scribe`, and
-its `session-scribe` skill runs the pipeline end to end, where
+[Claude Code](https://claude.com/claude-code) drives it. The server is registered as
+`sessionscribe`, and its `session-scribe` skill runs the pipeline end to end, where
 [`fvtt-mcp-dnd5e`](https://github.com/Txpple/fvtt-mcp-dnd5e) is a general bridge to Foundry's API.
 It **reads the world and never writes it**; the session-diary page goes in through `fvtt-mcp-dnd5e`.
 
@@ -24,7 +24,7 @@ transcript.
 git clone https://github.com/Txpple/fvtt-mcp-sessionscribe && cd fvtt-mcp-sessionscribe
 npm install && npm run build      # fvtt-mcp-dnd5e must be cloned beside this repo and built first
 cp .env.example .env              # FOUNDRY_SCRIBE_USER / FOUNDRY_SCRIBE_PASSWORD, SCRIBE_CAMPAIGN_REPO
-claude mcp add -s user scribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
+claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
 ```
 
 Then, once per machine:

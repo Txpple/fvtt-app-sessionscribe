@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # fvtt-mcp-sessionscribe
 
 The home of **session summaries and analytics** for Foundry VTT (dnd5e) tables: an MCP server
-(registered at user scope as `scribe`), driven by Claude Code through the `session-scribe`
-skill. It reads what happened at a session and writes the session record into
+(registered at user scope as `sessionscribe`), driven by Claude Code through the
+`session-scribe` skill. It reads what happened at a session and writes the session record into
 the campaign repo:
 - **Inputs:** the Craig voice recording, the Foundry chat log, Battle Flow's combat stats, the
   party's sheets.
@@ -15,10 +15,11 @@ the campaign repo:
 It **reads the world and never writes it**. The session-diary page and the bestiary are authored
 through `fvtt-mcp-dnd5e`.
 
-**State (2026-10-08).** Released as **1.0.0** on 2026-09-30; renamed from `fvtt-app-sessionscribe` and
-moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign repos
-are now `../../fvtt-campaign-*`). The campaign it was built for concluded with session 9 (2026-09-29),
-and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
+**State (2026-10-10).** Released as **1.0.0** on 2026-09-30; renamed from `fvtt-app-sessionscribe`
+and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign
+repos are now `../../fvtt-campaign-*`). The server key is `sessionscribe` since 2026-10-10 (was
+`scribe`; tools are `mcp__sessionscribe__*`), unreleased on `main`. The campaign it was built for
+concluded with session 9 (2026-09-29), and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
 handoff's history and the hard-won lessons; [CHANGELOG.md](CHANGELOG.md) is the release record.
 Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
 #17). All eight tools and the skill have landed.
@@ -141,8 +142,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
     identity.
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point
   `SCRIBE_CAMPAIGN_REPO` at it), never the real one.
-  - The running `scribe` server can't be re-pointed without a restart. Instead, drive a fresh
-    `dist/index.js` over stdio with that env: `scripts/call.mjs <tool> '<json>'`; `dotenv` does
+  - The running `sessionscribe` server can't be re-pointed without a restart. Instead, drive a
+    fresh `dist/index.js` over stdio with that env: `scripts/call.mjs <tool> '<json>'`; `dotenv` does
     not override a set variable.
   - A replay reads prod exactly as a real session does, and writes nothing to the world.
 - **A user's first join to a world runs modules' first-run writes.** Dice So Nice whispers a
