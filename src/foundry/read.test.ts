@@ -3,7 +3,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import type { WorldProbe } from '../page/probe.js';
-import { parseReply, refusal, SENTINEL } from './protocol.js';
+import { parseReply, refusal, SENTINEL, scribeUserMissing } from './protocol.js';
 import { childReader } from './read.js';
 
 const PROBE: WorldProbe = {
@@ -36,6 +36,39 @@ describe('refusal', () => {
     const elected = { ...PROBE, activeGM: { name: 'Scribe Assistant', isSelf: true } };
     expect(refusal(elected, 'lost-mine')).toBeNull();
     expect(refusal({ ...elected, combatActive: true }, 'lost-mine')).toMatch(/elected GM/);
+  });
+});
+
+describe('scribeUserMissing', () => {
+  const ctx = { user: 'Scribe Assistant', host: 'local' as const };
+
+  it('names the user, the world and the users the join listed, and the fix', () => {
+    const msg = scribeUserMissing(
+      'User "Scribe Assistant" not on /join. Available: ["","Gamemaster","MCP-Claude","Aria"]',
+      { ...ctx, worldId: 'lost-mine' }
+    );
+    expect(msg).toBe(
+      "FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in world 'lost-mine'; users: " +
+        'Gamemaster, MCP-Claude, Aria — create it as an Assistant GM, or set ' +
+        'FOUNDRY_SCRIBE_USER to an existing one (never the bridge’s user).'
+    );
+  });
+
+  it('takes a reworded client error, with or without a list', () => {
+    expect(
+      scribeUserMissing("user 'Scribe Assistant' not found in world 'x'; users: A, B", ctx)
+    ).toMatch(/not found in the world on host 'local'; users: A, B — create it/);
+    expect(scribeUserMissing('The user "Scribe Assistant" does not exist', ctx)).toMatch(
+      /^FOUNDRY_SCRIBE_USER 'Scribe Assistant' not found in the world on host 'local' — create/
+    );
+  });
+
+  it('passes every other failure through', () => {
+    expect(scribeUserMissing('Foundry /join form never appeared', ctx)).toBeNull();
+    expect(scribeUserMissing('User "Gamemaster" not on /join. Available: []', ctx)).toBeNull();
+    expect(
+      scribeUserMissing('Join did not reach game.ready (error: bad password)', ctx)
+    ).toBeNull();
   });
 });
 

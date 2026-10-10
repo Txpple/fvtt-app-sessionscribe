@@ -27,6 +27,24 @@ cp .env.example .env              # FOUNDRY_SCRIBE_USER / FOUNDRY_SCRIBE_PASSWOR
 claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node /absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js
 ```
 
+- **The Foundry connection is `fvtt-mcp-dnd5e`'s `.env`,** not this repo's: fill that in first
+  (the server URL and world). This repo's `.env` holds only the scribe's own login, the campaign
+  repo and the toolchain paths. `npm run build` stops with a one-line message if
+  `fvtt-mcp-dnd5e` is not built yet.
+- **No `claude` on PATH?** A desktop-app install of Claude Code may not put the CLI on PATH. Add
+  the same server by hand under `mcpServers` in `~/.claude.json` (as in
+  [`.mcp.json.example`](.mcp.json.example)), with the full path to `node.exe`:
+
+  ```json
+  "sessionscribe": {
+    "command": "C:/Program Files/nodejs/node.exe",
+    "args": ["/absolute/path/to/fvtt-mcp-sessionscribe/dist/index.js"],
+    "env": { "FOUNDRY_HOST": "molten" }
+  }
+  ```
+
+  Back up `~/.claude.json` before editing it.
+
 Then, once per machine:
 
 - **Transcription toolchain.** Run `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel`.
@@ -35,11 +53,13 @@ Then, once per machine:
 - **The skill, in every project.** From the repo root in PowerShell, run
   `New-Item -ItemType Junction -Path "$HOME\.claude\skills\session-scribe" -Target "$PWD\.claude\skills\session-scribe"`.
 - **The scribe's own Foundry user.** Create an Assistant GM user (default `Scribe Assistant`).
-  Don't reuse the MCP's user: two clients on one user double Battle Flow's automation.
+  Don't reuse the MCP's user: two clients on one user double Battle Flow's automation. If
+  `FOUNDRY_SCRIBE_USER` names no user in the world, a read fails at the join, naming it and
+  listing the world's users.
 - **Restart Claude Code** and ask for `scribe-status`, which reports anything missing.
 
-`FOUNDRY_HOST` is `molten` or `local`. It sets the default host for reads, and each read tool
-can override it per call. The host URLs come from `fvtt-mcp-dnd5e`'s `.env`, not this repo's.
+`FOUNDRY_HOST` is `molten` (a hosted world) or `local` (a Foundry on this machine). It sets the
+default host for reads, and each read tool can override it per call. The host URLs come from `fvtt-mcp-dnd5e`'s `.env`, not this repo's.
 
 **Requirements:**
 - Windows and Node.js 22+.

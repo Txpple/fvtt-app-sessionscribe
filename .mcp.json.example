@@ -1,8 +1,8 @@
 {
-  "_comment": "House convention registers this server at USER scope: claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- node <abs path>/dist/index.js. FOUNDRY_HOST is the default host for Foundry reads (molten | local); every read tool can override it per call.",
+  "_comment": "House convention registers this server at USER scope: claude mcp add -s user sessionscribe -e FOUNDRY_HOST=molten -- \"C:/Program Files/nodejs/node.exe\" <abs path>/fvtt-mcp-sessionscribe/dist/index.js. Without `claude` on PATH (a desktop-app install), put the sessionscribe entry below under mcpServers in ~/.claude.json. The full node.exe path is the standard Windows install; a client launched outside a shell may not find a bare `node`. FOUNDRY_HOST is the default host for Foundry reads: molten (a hosted world) or local (a Foundry on this machine); every read tool can override it per call.",
   "mcpServers": {
     "sessionscribe": {
-      "command": "node",
+      "command": "C:/Program Files/nodejs/node.exe",
       "args": ["<abs path>/fvtt-mcp-sessionscribe/dist/index.js"],
       "env": { "FOUNDRY_HOST": "molten" }
     }

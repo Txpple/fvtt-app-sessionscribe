@@ -57,6 +57,44 @@ export function refusal(probe: WorldProbe, worldId: string | undefined): string 
   return null;
 }
 
+/**
+ * A join that failed because FOUNDRY_SCRIBE_USER is not a user in the world, told as such: the
+ * user list and the fix. The join itself is fvtt-mcp-dnd5e's client, whose /join reads the user
+ * list and throws naming the user (`User "X" not on /join. Available: [...]`); this matches any
+ * wording that names the user as not there, so a reworded client error still lands here. Returns
+ * null for every other failure, which the caller passes on unchanged.
+ */
+export function scribeUserMissing(
+  message: string,
+  ctx: { user: string; host: HostName; worldId?: string }
+): string | null {
+  const named = message.includes(`"${ctx.user}"`) || message.includes(`'${ctx.user}'`);
+  if (!named || !/not (on|in|found)|unknown user|no such user|does not exist/i.test(message)) {
+    return null;
+  }
+  const where = ctx.worldId ? `world '${ctx.worldId}'` : `the world on host '${ctx.host}'`;
+  const users = listedUsers(message);
+  return (
+    `FOUNDRY_SCRIBE_USER '${ctx.user}' not found in ${where}` +
+    (users.length ? `; users: ${users.join(', ')}` : '') +
+    ' — create it as an Assistant GM, or set FOUNDRY_SCRIBE_USER to an existing one ' +
+    '(never the bridge’s user).'
+  );
+}
+
+/** The user names a join error lists after "Available:" / "users:", as JSON or comma-separated. */
+function listedUsers(message: string): string[] {
+  const tail = /(?:available|users)\s*:\s*(.+)$/is.exec(message)?.[1]?.trim();
+  if (!tail) return [];
+  let names: unknown;
+  try {
+    names = JSON.parse(tail);
+  } catch {
+    names = tail.split(',');
+  }
+  return Array.isArray(names) ? names.map(n => String(n).trim()).filter(n => n.length > 0) : [];
+}
+
 /** Pull the one reply line out of the child's stdout. */
 export function parseReply<T>(stdout: string): ReadResponse<T> | null {
   const lines = stdout.split(/\r?\n/).filter(l => l.startsWith(SENTINEL));

@@ -19,8 +19,9 @@ through `fvtt-mcp-dnd5e`.
 and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign
 repos are now `../../fvtt-campaign-*`). The server key is `sessionscribe` since 2026-10-10 (was
 `scribe`; tools are `mcp__sessionscribe__*`), unreleased on `main`. The campaign it was built for
-concluded with session 9 (2026-09-29), and nothing is pending. [NEXT-SESSION.md](NEXT-SESSION.md) is the
-handoff's history and the hard-won lessons; [CHANGELOG.md](CHANGELOG.md) is the release record.
+concluded with session 9 (2026-09-29), and nothing is pending.
+[NEXT-SESSION.md](NEXT-SESSION.md) is the handoff's history and the hard-won lessons;
+[CHANGELOG.md](CHANGELOG.md) is the release record.
 Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisions #16 and
 #17). All eight tools and the skill have landed.
 - **Proven:**
@@ -40,7 +41,7 @@ Broken out of `fvtt-mcp-dnd5e` by owner ruling (reversing that repo's 3.0 decisi
 
 ```bash
 npm install                 # once; fvtt-mcp-dnd5e must be built first (its dist/ is the client)
-npm run build               # tsc → dist/, then esbuild.page.mjs → dist/page.bundle.js
+npm run build               # scripts/prebuild.mjs (is fvtt-mcp-dnd5e built?), tsc → dist/, esbuild.page.mjs → dist/page.bundle.js
 npm test                    # vitest, offline (src/**/*.test.ts)
 npx vitest run src/transcript/align.test.ts   # one file; add -t "<name>" for one test
 npm run check && npm run typecheck && npm test && npm run build && npm run knip   # the gate
@@ -58,7 +59,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 
 **The server**
 - `src/index.ts` (stdio) runs `src/server.ts`, which is transport-agnostic; the tests drive it
-  with an in-memory client.
+  with an in-memory client. At start it logs (stderr, `[sessionscribe]`) whether
+  `SCRIBE_CAMPAIGN_REPO/campaign.json` exists; a missing one is a warning, not an exit.
 - `src/registry.ts` is the one name → handler map. The advertised list is derived from it, and a
   mismatch fails fast.
 - Each tool is a class in `src/tools/` with a hoisted zod schema; `src/utils/schema.ts` generates
@@ -77,7 +79,9 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
   sentinel-prefixed reply line on stdout, killed after its watchdog.
 - The worker uses `src/foundry/session.ts`, shared with the parity scripts:
   - It joins as **Scribe Assistant** (never the MCP bridge's user: two clients on one user double
-    Battle Flow's automation), with the admin key stripped.
+    Battle Flow's automation), with the admin key stripped. The join is `fvtt-mcp-dnd5e`'s
+    client; when it fails on a user not in the world, `protocol.scribeUserMissing()` rewrites
+    the error to name `FOUNDRY_SCRIBE_USER`, list the world's users and say the fix.
   - It injects `dist/page.bundle.js` as `window.__scribe`.
   - It probes the world, and `protocol.refusal()` refuses another world, a login below Assistant
     GM, or the scribe being the elected GM while a combat runs.
@@ -143,8 +147,8 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 -PrefetchModel   # tr
 - **Replays of real sessions** go to a scratch copy of the campaign repo (point
   `SCRIBE_CAMPAIGN_REPO` at it), never the real one.
   - The running `sessionscribe` server can't be re-pointed without a restart. Instead, drive a
-    fresh `dist/index.js` over stdio with that env: `scripts/call.mjs <tool> '<json>'`; `dotenv` does
-    not override a set variable.
+    fresh `dist/index.js` over stdio with that env: `scripts/call.mjs <tool> '<json>'`; `dotenv`
+    does not override a set variable.
   - A replay reads prod exactly as a real session does, and writes nothing to the world.
 - **A user's first join to a world runs modules' first-run writes.** Dice So Nice whispers a
   welcome and sets a user flag. Scribe Assistant's first prod join did this (2026-09-24 01:19Z).

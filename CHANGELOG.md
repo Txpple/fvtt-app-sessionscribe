@@ -14,6 +14,18 @@ What changed for a user of the tools and the skill, release by release. Dates ar
   permission allowlist, a campaign repo's notes) needs the same edit. Log lines read
   `[sessionscribe]`.
 - The description says what it is: an MCP server (it was "an app" since the `fvtt-app-*` days).
+- **A `FOUNDRY_SCRIBE_USER` that is not in the world fails at the join** with the world's users
+  and the fix (`user 'X' not found in world 'Y'; users: A, B, C — create it as an Assistant GM,
+  or set FOUNDRY_SCRIBE_USER to an existing one (never the bridge's user)`), instead of the
+  client's generic join error.
+- **`npm run build` checks `fvtt-mcp-dnd5e` is built first** (its `dist/` is the Foundry client)
+  and says so in one line, instead of a wall of tsc errors.
+- At start the server logs whether `SCRIBE_CAMPAIGN_REPO/campaign.json` exists (a warning, never
+  an exit).
+- Setup docs: `.env.example` says up top that the Foundry connection is
+  `../fvtt-mcp-dnd5e/.env` and lists the keys read from it; `.mcp.json.example` uses the full
+  `node.exe` path and names `FOUNDRY_HOST=local` beside `molten`; the README gives the
+  `~/.claude.json` entry for installs without `claude` on PATH.
 
 ## 1.0.0 — 2026-09-30 — the scribe, proven on a full campaign
 

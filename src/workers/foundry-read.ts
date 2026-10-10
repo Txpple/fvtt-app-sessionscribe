@@ -38,7 +38,7 @@ async function main(): Promise<void> {
 
   let session: ScribeSession | undefined;
   try {
-    session = await openScribeSession(req.host);
+    session = await openScribeSession(req.host, req.worldId ? { worldId: req.worldId } : {});
     const probe = await session.call<WorldProbe>('probe');
     const refused = refusal(probe, req.worldId);
     const readAt = new Date().toISOString();

@@ -10,6 +10,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Foundry, foundryConfig, loadEnv } from 'fvtt-mcp-dnd5e/client';
 import { config, type HostName, repoRoot } from '../config.js';
+import { scribeUserMissing } from './protocol.js';
 
 const DISPOSE_CEILING_MS = 15_000;
 const silent = { debug() {}, info() {}, warn() {}, error() {} };
@@ -25,7 +26,14 @@ export interface ScribeSession {
   dispose(): Promise<void>;
 }
 
-export async function openScribeSession(host: HostName): Promise<ScribeSession> {
+/**
+ * `worldId` (campaign.json's) only sharpens the message when FOUNDRY_SCRIBE_USER is not in the
+ * world; the world itself is checked after the join, by protocol.refusal().
+ */
+export async function openScribeSession(
+  host: HostName,
+  opts: { worldId?: string } = {}
+): Promise<ScribeSession> {
   if (!config.scribeUser || !config.scribePassword) {
     throw new Error('FOUNDRY_SCRIBE_USER / FOUNDRY_SCRIBE_PASSWORD are not set in the scribe .env');
   }
@@ -42,7 +50,17 @@ export async function openScribeSession(host: HostName): Promise<ScribeSession> 
     ]);
   };
   try {
-    await f.connect();
+    try {
+      await f.connect();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      const missing = scribeUserMissing(message, {
+        user: config.scribeUser,
+        host,
+        ...(opts.worldId ? { worldId: opts.worldId } : {}),
+      });
+      throw missing ? new Error(missing) : e;
+    }
     const injected = await f.evaluate((src: string) => {
       const s = document.createElement('script');
       s.textContent = src;
