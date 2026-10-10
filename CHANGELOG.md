@@ -2,7 +2,7 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.2.1 — 2026-10-10 — the scribe may join as the bridge's Assistant GM user
 
 - **The scribe may join as the `fvtt-mcp-dnd5e` bridge's own Assistant GM user**, and on the
   house worlds does (owner ruling, 2026-10-10, to stop user bloat): set `FOUNDRY_SCRIBE_USER` /
