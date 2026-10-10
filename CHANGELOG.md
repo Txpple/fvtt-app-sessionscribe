@@ -2,7 +2,7 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.2.0 — 2026-10-10 — npm run doctor and npm run install-skill
 
 - **`npm run doctor`** checks the whole setup in one pass, one line per check (✓ works, ✗ blocks
   a session and says the fix, ! worth knowing), and exits non-zero on any ✗:
