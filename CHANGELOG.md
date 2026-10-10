@@ -2,6 +2,10 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
+## Unreleased
+
+- `.mcp.json.example` shows `FVTT_MCP_ENV`: a hosted world whose connection lives in its own fvtt-mcp-dnd5e env file needs it in the scribe's registration too, or molten reads fall back to `../fvtt-mcp-dnd5e/.env`.
+
 ## 1.2.1 — 2026-10-10 — the scribe may join as the bridge's Assistant GM user
 
 - **The scribe may join as the `fvtt-mcp-dnd5e` bridge's own Assistant GM user**, and on the
