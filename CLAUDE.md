@@ -18,7 +18,7 @@ through `fvtt-mcp-dnd5e`.
 **State (2026-10-10).** Released as **1.0.0** on 2026-09-30; renamed from `fvtt-app-sessionscribe`
 and moved under the suite folder on 2026-10-08 (`../fvtt-mcp-dnd5e` still resolves; the campaign
 repos are now `../../fvtt-campaign-*`). The server key is `sessionscribe` since 2026-10-10 (was
-`scribe`; tools are `mcp__sessionscribe__*`), unreleased on `main`. The campaign it was built for
+`scribe`; tools are `mcp__sessionscribe__*`), released as **1.1.0** with the setup checks. The campaign it was built for
 concluded with session 9 (2026-09-29), and nothing is pending.
 [NEXT-SESSION.md](NEXT-SESSION.md) is the handoff's history and the hard-won lessons;
 [CHANGELOG.md](CHANGELOG.md) is the release record.

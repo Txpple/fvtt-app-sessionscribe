@@ -2,7 +2,7 @@
 
 What changed for a user of the tools and the skill, release by release. Dates are tag dates.
 
-## Unreleased
+## 1.1.0 — 2026-10-10 — the server key is sessionscribe; setup fails fast
 
 - **The server key is `sessionscribe`** (was `scribe`), the repo's name part, as
   `fvtt-mcp-imagegen` registers as `imagegen`. Tools now appear as `mcp__sessionscribe__*`; the
@@ -15,7 +15,7 @@ What changed for a user of the tools and the skill, release by release. Dates ar
   `[sessionscribe]`.
 - The description says what it is: an MCP server (it was "an app" since the `fvtt-app-*` days).
 - **A `FOUNDRY_SCRIBE_USER` that is not in the world fails at the join** with the world's users
-  and the fix (`user 'X' not found in world 'Y'; users: A, B, C — create it as an Assistant GM,
+  and the fix (`FOUNDRY_SCRIBE_USER 'X' not found in world 'Y'; users: A, B, C — create it as an Assistant GM,
   or set FOUNDRY_SCRIBE_USER to an existing one (never the bridge's user)`), instead of the
   client's generic join error.
 - **`npm run build` checks `fvtt-mcp-dnd5e` is built first** (its `dist/` is the Foundry client)
